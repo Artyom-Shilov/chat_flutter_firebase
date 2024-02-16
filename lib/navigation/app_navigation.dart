@@ -1,7 +1,8 @@
 import 'dart:developer';
 
 import 'package:chat_flutter_firebase/auth/pages/auth_page.dart';
-import 'package:chat_flutter_firebase/chat_list/pages/chats_page.dart';
+import 'package:chat_flutter_firebase/chats/pages/chats_page.dart';
+import 'package:chat_flutter_firebase/chats/pages/chats_search_page.dart';
 import 'package:chat_flutter_firebase/common/initial_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
@@ -39,14 +40,23 @@ class AppNavigation {
             GoRoute(
                 path: '/${Routes.chats.routeName}',
                 name: Routes.chats.routeName,
-                builder: (context, state) => const ChatListPage())
+                builder: (context, state) => const ChatListPage(),
+                routes: [
+                  GoRoute(
+                      path: Routes.search.routeName,
+                      name: Routes.search.routeName,
+                    builder: (context, state) => const ChatSearchPage()
+                  )
+                ]
+            )
           ]);
 }
 
 enum Routes {
   signIn('sign_in'),
   registration('register'),
-  chats('chats');
+  chats('chats'),
+  search('search');
 
   const Routes(this.routeName);
 

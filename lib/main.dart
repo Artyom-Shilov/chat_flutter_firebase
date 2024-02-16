@@ -3,6 +3,8 @@ import 'package:chat_flutter_firebase/auth/controllers/auth_cubit_impl.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_processing_cubit.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_processing_cubit_impl.dart';
 import 'package:chat_flutter_firebase/auth/services/firebase_auth_service.dart';
+import 'package:chat_flutter_firebase/chats/controllers/chats_cubit.dart';
+import 'package:chat_flutter_firebase/chats/controllers/chats_cubit_impl.dart';
 import 'package:chat_flutter_firebase/local_storage/services/isar_storage_service.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
@@ -10,6 +12,7 @@ import 'package:chat_flutter_firebase/rest_network/dio_service.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,6 +26,8 @@ void main() async {
   await storage.init();
   GetIt.I.registerSingleton<LocalStorageService>(storage);
   GetIt.I.registerSingleton<NetworkService>(DioService());
+  SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
   runApp(const MyApp());
 }
 
@@ -34,15 +39,19 @@ class MyApp extends HookWidget {
     final navigation = useState(AppNavigation()).value;
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthCubit>(
-            create: (context) => AuthCubitImpl(
-                authService: FirebaseAuthService(),
-                networkService: GetIt.I.get<NetworkService>(),
-                localStorageService: GetIt.I.get<LocalStorageService>())),
-        BlocProvider<AuthProcessingCubit>(
-            create: (context) => AuthProcessingCubitImpl())
-      ],
-      child: MaterialApp.router(
+          BlocProvider<AuthCubit>(
+              create: (context) => AuthCubitImpl(
+                  authService: FirebaseAuthService(),
+                  networkService: GetIt.I.get<NetworkService>(),
+                  localStorageService: GetIt.I.get<LocalStorageService>())),
+          BlocProvider<AuthProcessingCubit>(
+              create: (context) => AuthProcessingCubitImpl()),
+          BlocProvider<ChatsCubit>(
+              create: (context) => ChatsCubitImpl(
+                  networkService: GetIt.I.get<NetworkService>(),
+                  storageService: GetIt.I.get<LocalStorageService>()))
+        ],
+        child: MaterialApp.router(
         routerConfig: navigation.goRouter,
         title: 'Chat app',
         theme: ThemeData(

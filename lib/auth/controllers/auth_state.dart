@@ -1,4 +1,4 @@
-import 'package:chat_flutter_firebase/app_models/app_user.dart';
+import 'package:chat_flutter_firebase/app_models/user_info.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'auth_state.freezed.dart';
@@ -14,7 +14,7 @@ enum AuthStatus {
 class AuthState with _$AuthState {
   const factory AuthState({
     required AuthStatus status,
-    AppUser? user,
+    UserInfo? user,
     @Default('') String message
   }) = _AuthState;
 }

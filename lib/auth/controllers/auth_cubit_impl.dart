@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:chat_flutter_firebase/app_models/app_user.dart';
+import 'package:chat_flutter_firebase/app_models/user_info.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_state.dart';
 import 'package:chat_flutter_firebase/auth/services/auth_service.dart';
@@ -34,7 +34,7 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
   final AuthService _auth;
   final NetworkService _network;
   final LocalStorageService _localStorage;
-  StreamSubscription<AppUser?>? userSubscription;
+  StreamSubscription<UserInfo?>? userSubscription;
 
   @override
   Future<void> createUserByEmailAndPassword(
@@ -47,7 +47,7 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       }
       await _addUserIfAbsent();
       await _localStorage
-          .saveCurrentAppUser(LocalUserInfo.fromAppUser(state.user!));
+          .saveCurrentAppUser(LocalUserInfo.fromUserInfo(state.user!));
     } catch (e) {
       log(e.toString());
       emit(state.copyWith(
@@ -64,7 +64,7 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       await _auth.signInByEmailAndPassword(email, password);
       await _addUserIfAbsent();
       await _localStorage
-          .saveCurrentAppUser(LocalUserInfo.fromAppUser(state.user!));
+          .saveCurrentAppUser(LocalUserInfo.fromUserInfo(state.user!));
     } catch (e) {
       log(e.toString());
       emit(state.copyWith(
@@ -81,7 +81,7 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       await _auth.signInByGoogle();
       await _addUserIfAbsent();
       await _localStorage
-          .saveCurrentAppUser(LocalUserInfo.fromAppUser(state.user!));
+          .saveCurrentAppUser(LocalUserInfo.fromUserInfo(state.user!));
     } catch (e, stacktrace) {
       log(stacktrace.toString());
       emit(state.copyWith(
@@ -104,7 +104,8 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
   }
 
   @override
-  AppUser? get user => state.user;
+  //TODO if no connection => from local storage;
+  UserInfo? get user => state.user;
 
   @override
   Future<void> close() async {
@@ -114,7 +115,12 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
 
   Future<void> _addUserIfAbsent() async {
     !await _network.isUserInDatabase(state.user!)
-        ? await _network.addUserToDatabase(state.user!)
+        ? await _network.saveUser(state.user!)
         : null;
+  }
+
+  @override
+  void setUserFromLocalStorage(LocalUserInfo localUserInfo) {
+    emit(state.copyWith(user: UserInfo.fromLocalUserInfo(localUserInfo)));
   }
 }
