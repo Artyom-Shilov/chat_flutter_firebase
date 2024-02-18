@@ -9,7 +9,8 @@ class ChatInfo with _$ChatInfo {
   const ChatInfo._();
 
   const factory ChatInfo(
-      {required String name,
+      {
+        required String name,
       required String adminId,
       String? photoUrl,
       String? lastUserNameText,

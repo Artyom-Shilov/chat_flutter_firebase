@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:chat_flutter_firebase/app_models/chat_info.dart';
 import 'package:chat_flutter_firebase/app_models/user_info.dart';
@@ -78,12 +81,28 @@ class DioService implements NetworkService {
     final userJson = userInfo.toJson();
     userJson.remove('id');
     await _dio.put('/${Location.chats.name}/${chatInfo.name}.json', data: chatJson);
-    await _dio.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: {userJson});
+    await _dio.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
     await _dio.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
   }
 
   @override
-  Future<List<ChatInfo>> searchForChats(String name) async {
-    throw UnimplementedError();
+  Future<List<ChatInfo>> searchForChats(String searchValue) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+        '/${Location.chats.name}/.json',
+        queryParameters: {
+          'orderBy': r'"$key"',
+          'startAt': '"$searchValue"',
+          'endAt': '"$searchValue\uf8ff"'
+        });
+    final output = <ChatInfo>[];
+    if (response.data!.isEmpty) {
+      return output;
+    }
+    final chats = response.data!;
+    for (final key in chats.keys) {
+      output.add(ChatInfo.fromJson((chats[key] as Map<String, dynamic>)
+        ..putIfAbsent('name', () => key)));
+    }
+    return output;
   }
 }

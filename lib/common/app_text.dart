@@ -21,6 +21,7 @@ abstract class AuthErrorTexts {
   static const String signInByEmailAndPasswordRu = 'Ошибка в процессе авторизации через Email и пароль';
   static const String signInByGoogleRu = 'Ошибка в процессе авторизации через Google-аккаунт';
   static const String signOut = 'Ошибка в процессе выхода';
+  static const String noConnectionRU = 'Нет подкючения к сети';
 }
 
 abstract class ChatTexts {

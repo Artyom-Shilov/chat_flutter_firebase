@@ -22,7 +22,7 @@ class ChatListPage extends HookWidget {
     useEffect(() {
       chatsCubit.loadChatsByUserId(authCubit.user!.id);
       return null;
-    });
+    }, ['key']);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),

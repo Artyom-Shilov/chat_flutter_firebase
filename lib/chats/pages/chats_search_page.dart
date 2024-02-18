@@ -1,5 +1,6 @@
 import 'package:chat_flutter_firebase/chats/controllers/chat_search_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/search_state.dart';
+import 'package:chat_flutter_firebase/chats/widgets/search_result_list.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,21 +21,22 @@ class ChatSearchPage extends StatelessWidget {
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(Sizes.borderRadius1))),
-          bottom: const PreferredSize(
+          bottom: PreferredSize(
             preferredSize: Size.fromHeight(40),
             child: Padding(
               padding: EdgeInsets.fromLTRB(40, 0, 40, 10),
               child: TextField(
+                onSubmitted: (text) async {
+                  await BlocProvider.of<ChatSearchCubit>(context).searchChatsByName(text);
+                },
               ),
             ),
           ),
         ),
         body: BlocBuilder<ChatSearchCubit, SearchState>(
-          buildWhen: (prev, next) =>
-              prev.status != next.status ||
-              prev.searchResult != next.searchResult,
+          buildWhen: (prev, next) => prev.status != next.status,
           builder: (BuildContext context, state) {
-            return SearchResultList();
+            return const SearchResultList();
           },
         ),
       ),
