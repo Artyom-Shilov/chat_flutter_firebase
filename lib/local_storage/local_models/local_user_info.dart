@@ -17,6 +17,7 @@ class LocalUserInfo {
 
   String? name;
   String? email;
+  @Index()
   String userId;
   String? photoUrl;
   Id id = Isar.autoIncrement;

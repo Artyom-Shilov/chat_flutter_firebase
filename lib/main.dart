@@ -60,6 +60,8 @@ class MyApp extends HookWidget {
                   networkConnectivity: GetIt.I.get<NetworkConnectivity>())),
         BlocProvider<ChatSearchCubit>(
             create: (context) =>  ChatSearchCubitImpl(
+                storageService: GetIt.I.get<LocalStorageService>(),
+                networkConnectivity: GetIt.I.get<NetworkConnectivity>(),
                 networkService: GetIt.I.get<NetworkService>()))
         ],
         child: MaterialApp.router(

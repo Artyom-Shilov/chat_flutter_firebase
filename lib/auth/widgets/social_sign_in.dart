@@ -31,14 +31,13 @@ class SocialSignIn extends StatelessWidget {
               content: Image.asset(
                   'assets/auth_buttons/google.png',
                   width: 25),
-              onPressed: () async {
-                formKey.currentState!.reset();
-                await authCubit.signInByGoogle();
-                if(authCubit.state.status != AuthStatus.error) {
-                  router.goNamed(Routes.chats.routeName);
-                }
-              },
-            ),
+                onPressed: () async {
+                  formKey.currentState!.reset();
+                  await authCubit.signInByGoogle();
+                  authCubit.state.status != AuthStatus.error
+                      ? router.goNamed(Routes.chats.routeName)
+                      : authCubit.resetState();
+                }),
           ],
         ),
       ],

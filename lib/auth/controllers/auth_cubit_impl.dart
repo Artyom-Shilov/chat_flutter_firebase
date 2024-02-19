@@ -49,14 +49,11 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       }
       emit(state.copyWith(status: AuthStatus.loading));
       await _auth.createUserByEmailAndPassword(email, password);
-      if (username != null) {
-        emit(state.copyWith(user: state.user!.copyWith(name: username)));
-      }
       await _addUserIfAbsent();
       await _localStorage
           .saveCurrentAppUser(LocalUserInfo.fromUserInfo(state.user!));
-    } catch (e) {
-      log(e.toString());
+    } catch (e, stackTrace) {
+      log(stackTrace.toString());
       emit(state.copyWith(
           status: AuthStatus.error,
           message: AuthErrorTexts.createUserByEmailAndPasswordRu));
@@ -75,8 +72,8 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       await _addUserIfAbsent();
       await _localStorage
           .saveCurrentAppUser(LocalUserInfo.fromUserInfo(state.user!));
-    } catch (e) {
-      log(e.toString());
+    } catch (e, stackTrace) {
+      log(stackTrace.toString());
       emit(state.copyWith(
           status: AuthStatus.error,
           message: AuthErrorTexts.signInByEmailAndPasswordRu));
@@ -86,6 +83,7 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
 
   @override
   Future<void> signInByGoogle() async {
+    log('googleSignIn');
     try {
       if (!await _checkNetworkConnection()) {
         return;
@@ -111,26 +109,12 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       }
       await _auth.signOut();
       await _localStorage.deleteCurrentAppUser();
-    } catch (e) {
-      log(e.toString());
+    } catch (e, stackTrace) {
+      log(stackTrace.toString());
       emit(state.copyWith(
           status: AuthStatus.error, message: AuthErrorTexts.signOut));
       return;
     }
-  }
-
-  @override
-  UserInfo? get user => state.user;
-
-  @override
-  Future<void> close() async {
-    await userSubscription?.cancel();
-    await super.close();
-  }
-
-  @override
-  void setUserFromLocalStorage(LocalUserInfo localUserInfo) {
-    emit(state.copyWith(user: UserInfo.fromLocalUserInfo(localUserInfo)));
   }
 
   Future<void> _addUserIfAbsent() async {
@@ -142,9 +126,27 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
   Future<bool> _checkNetworkConnection() async {
     final result = await _networkConnectivity.checkNetworkConnection();
     !result
-        ? emit(state.copyWith(
-            status: AuthStatus.error, message: AuthErrorTexts.noConnectionRU))
+        ? emit(state.copyWith(status: AuthStatus.error, message: AuthErrorTexts.noConnectionRU))
         : null;
     return result;
+  }
+
+  @override
+  UserInfo? get user => state.user;
+
+  @override
+  void setUserFromLocalStorage(LocalUserInfo localUserInfo) {
+    emit(state.copyWith(user: UserInfo.fromLocalUserInfo(localUserInfo)));
+  }
+
+  @override
+  void resetState() {
+    emit(state.copyWith(status: AuthStatus.signedOut, message: '', user: null));
+  }
+
+  @override
+  Future<void> close() async {
+    await userSubscription?.cancel();
+    await super.close();
   }
 }

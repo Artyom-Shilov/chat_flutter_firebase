@@ -14,4 +14,5 @@ abstract interface class AuthCubit extends Cubit<AuthState> {
   Future<void> signOut();
   Future<void> signInByGoogle();
   void setUserFromLocalStorage(LocalUserInfo localUserInfo);
+  void resetState();
 }

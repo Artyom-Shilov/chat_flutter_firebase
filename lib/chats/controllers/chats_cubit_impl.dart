@@ -30,6 +30,10 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
     });
   }
 
+  //TODO Listening for creations in userChats and change state and local storage
+
+  //TODO Listening fot updates in userChats and change state and local storage
+
   StreamSubscription<ChatInfo>? chatInfoSubscription;
   final NetworkService _networkService;
   final LocalStorageService _storageService;
@@ -40,25 +44,48 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
 
   @override
   Future<void> createChat(ChatInfo chatInfo, UserInfo userInfo) async {
-    log('createChat');
+    log('create chat');
     emit(state.copyWith(status: ChatsStatus.loading));
-    await _networkService.saveChat(chatInfo, userInfo);
-    emit(state.copyWith(
-        status: ChatsStatus.ready, userChats: List.of(state.userChats)..add(chatInfo)));
+    try {
+      if (!await _networkConnectivity.checkNetworkConnection()) {
+        emit(state.copyWith(
+            status: ChatsStatus.error,
+            message: ChatErrorsTexts.noConnectionRU));
+      }
+      await _networkService.saveChat(chatInfo, userInfo);
+      final updatedChatList = List.of(state.userChats)
+        ..add(chatInfo);
+      await _storageService.saveUserChats(
+          LocalUserChats.fromUserChats(userInfo.id, updatedChatList));
+      emit(state.copyWith(
+          status: ChatsStatus.ready, userChats: updatedChatList));
+    } catch (e, stackTrace) {
+      log(stackTrace.toString());
+      emit(state.copyWith(status: ChatsStatus.error, message: ChatErrorsTexts.createChatRu));
+    }
   }
 
   @override
   Future<void> loadChatsByUserId(String userId) async {
+    log('load user chats');
     emit(state.copyWith(status: ChatsStatus.loading));
-    final List<ChatInfo> userChats;
-    if (await _networkConnectivity.checkNetworkConnection()) {
-      userChats = await _networkService.getChatsByUser(userId);
-      _storageService.saveUserChats(LocalUserChats.fromUserChats(userId, userChats));
-      emit(state.copyWith(status: ChatsStatus.ready, userChats: userChats));
-      print((await _storageService.getChatsByUser(userId))?.chats);
-    } else {
-      userChats = [];//await _storageService.getChatsByUser(userId);
-      emit(state.copyWith(status: ChatsStatus.ready, userChats: userChats));
+    try {
+      final List<ChatInfo> userChats;
+      if (await _networkConnectivity.checkNetworkConnection()) {
+        userChats = await _networkService.getChatsByUser(userId);
+        _storageService.saveUserChats(LocalUserChats.fromUserChats(userId, userChats));
+        emit(state.copyWith(status: ChatsStatus.ready, userChats: userChats));
+      } else {
+        final localChats = (await _storageService.getChatsByUser(userId))?.chats
+            ?? [];
+        userChats =
+            localChats.map((e) => ChatInfo.fromLocalChatInfo(e)).toList();
+        emit(state.copyWith(status: ChatsStatus.ready, userChats: userChats));
+      }
+    } catch (e, stackTrace) {
+      log(stackTrace.toString());
+      emit(state.copyWith(
+          status: ChatsStatus.error, message: ChatErrorsTexts.loadUserChatsRu));
     }
   }
 
@@ -80,17 +107,21 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
 
   @override
   Future<void> validateChatName() async {
+    log('chat name validation');
     final chatName = chatCreationController.text;
     if (chatName.isEmpty) {
       emit(state.copyWith(chatCreationErrorText: ChatTexts.chatNameLengthFieldErrorRu));
       return;
     }
-    final isExists = await _networkService.isChatInDatabase(chatName);
-    log('isChatExists: $isExists');
-    if (isExists) {
-      emit(state.copyWith(chatCreationErrorText: ChatTexts.chatAlreadyExistsFieldErrorRu));
+    if(await _networkConnectivity.checkNetworkConnection()) {
+      final isExists = await _networkService.isChatInDatabase(chatName);
+      log('isChatExists: $isExists');
+      isExists
+          ? emit(state.copyWith(
+              chatCreationErrorText: ChatTexts.chatAlreadyExistsFieldErrorRu))
+          : emit(state.copyWith(chatCreationErrorText: null));
     } else {
-      emit(state.copyWith(chatCreationErrorText: null));
+      emit(state.copyWith(chatCreationErrorText: ChatErrorsTexts.noConnectionRU));
     }
   }
 

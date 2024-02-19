@@ -14,8 +14,8 @@ enum SearchStatus {
 class SearchState with _$SearchState {
   const factory SearchState({
     required SearchStatus status,
-    @Default([]) List<ChatInfo> searchResult,
+    @Default([]) List<({ChatInfo chat, bool isJoined})> searchResult,
     String? chatSearchErrorText,
-    @Default('') message
-}) = _SearchState;
+    @Default('') message,
+  }) = _SearchState;
 }

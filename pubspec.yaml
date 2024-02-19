@@ -52,6 +52,7 @@ dependencies:
   connection_checker:
     path: connection_checker
   firebase_database: ^10.4.0
+  cached_network_image: ^3.3.1
 
 
 dev_dependencies:

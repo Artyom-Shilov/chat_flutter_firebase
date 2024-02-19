@@ -1,5 +1,6 @@
 import 'package:chat_flutter_firebase/chats/controllers/chats_cubit.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
+import 'package:chat_flutter_firebase/common/widgets/circle_cashed_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -14,30 +15,35 @@ class ChatList extends StatelessWidget {
       padding: const EdgeInsets.only(top: Sizes.verticalInset1),
       child: ListView.separated(
         itemCount: chats.length,
-        separatorBuilder: (context, index) => SizedBox(height: Sizes.verticalInset2),
+        separatorBuilder: (context, index) =>
+            SizedBox(height: Sizes.verticalInset2),
         itemBuilder: (context, index) {
           final chat = chats[index];
           final lastUser = chat.lastUserNameText;
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Sizes.horizontalInset2),
+            padding:
+                const EdgeInsets.symmetric(horizontal: Sizes.horizontalInset2),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(Sizes.borderRadius1)
-              ),
+                  color: Theme.of(context).primaryColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(Sizes.borderRadius1)),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: Sizes.verticalInset2),
+                padding:
+                    const EdgeInsets.symmetric(vertical: Sizes.verticalInset2),
                 child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.5),
-                      radius: 30,
-                      backgroundImage: chat.photoUrl != null
-                          ? Image.network(chat.photoUrl!).image
-                          : null,
-                      child: chat.photoUrl == null
-                          ? Center(child: Text(chats[index].name[0].toUpperCase(), style: TextStyle(fontWeight: FontWeight.bold),))
-                          : null,
-                    ),
+                    leading: chat.photoUrl == null
+                        ? CircleAvatar(
+                            backgroundColor:
+                                Theme.of(context).primaryColor.withOpacity(0.5),
+                            radius: 30,
+                            child: Center(
+                                    child: Text(
+                                    chats[index].name[0].toUpperCase(),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  )))
+                        : CircleCashedNetworkImage(
+                            url: chat.photoUrl!, radius: 30),
                     title: Text(chat.name),
                     subtitle: lastUser != null
                         ? Row(

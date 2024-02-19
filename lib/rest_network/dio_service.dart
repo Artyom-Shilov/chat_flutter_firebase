@@ -105,4 +105,14 @@ class DioService implements NetworkService {
     }
     return output;
   }
+
+  @override
+  Future<void> joinChat(ChatInfo chatInfo, UserInfo userInfo) async {
+    final chatJson = chatInfo.toJson();
+    chatJson.remove('name');
+    final userJson = userInfo.toJson();
+    userJson.remove('id');
+    await _dio.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
+    await _dio.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
+  }
 }

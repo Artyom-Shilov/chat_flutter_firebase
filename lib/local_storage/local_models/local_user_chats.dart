@@ -5,9 +5,13 @@ part 'local_user_chats.g.dart';
 
 @collection
 class LocalUserChats {
+
   LocalUserChats._(this.userId, this.chats);
 
-  LocalUserChats({required this.userId, this.chats = const []});
+  LocalUserChats({
+    required this.userId,
+    this.chats = const []
+});
 
   Id isarId = Isar.autoIncrement;
   @Index()
@@ -16,13 +20,15 @@ class LocalUserChats {
 
   factory LocalUserChats.fromUserChats(String userId, List<ChatInfo> chatList) {
     return LocalUserChats(
-        userId: userId,
-        chats: chatList.map((e) => LocalChatInfo.fromChatInfo(e)).toList());
+      userId: userId,
+      chats: chatList.map((e) => LocalChatInfo.fromChatInfo(e)).toList()
+    );
   }
 }
 
 @embedded
 class LocalChatInfo {
+
   LocalChatInfo._(this.adminId, this.name);
 
   LocalChatInfo(
@@ -38,14 +44,27 @@ class LocalChatInfo {
 
   factory LocalChatInfo.fromChatInfo(ChatInfo chatInfo) {
     return LocalChatInfo(
-        name: chatInfo.name,
-        adminId: chatInfo.adminId,
-        lastUserNameText: chatInfo.lastUserNameText,
-        lastMessageText: chatInfo.lastMessageText);
+      name: chatInfo.name,
+      adminId: chatInfo.adminId,
+      lastUserNameText: chatInfo.lastUserNameText,
+      lastMessageText: chatInfo.lastMessageText
+    );
   }
 
   @override
-  String toString() {
-    return 'LocalChatInfo{name: $name, adminId: $adminId, lastUserNameText: $lastUserNameText, lastMessageText: $lastMessageText}';
-  }
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LocalChatInfo &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          adminId == other.adminId &&
+          lastUserNameText == other.lastUserNameText &&
+          lastMessageText == other.lastMessageText;
+
+  @override
+  int get hashCode =>
+      name.hashCode ^
+      adminId.hashCode ^
+      lastUserNameText.hashCode ^
+      lastMessageText.hashCode;
 }

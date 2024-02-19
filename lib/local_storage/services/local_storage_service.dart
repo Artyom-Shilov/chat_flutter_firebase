@@ -1,4 +1,3 @@
-import 'package:chat_flutter_firebase/app_models/chat_info.dart';
 import 'package:chat_flutter_firebase/local_storage/local_models/local_user_chats.dart';
 import 'package:chat_flutter_firebase/local_storage/local_models/local_user_info.dart';
 

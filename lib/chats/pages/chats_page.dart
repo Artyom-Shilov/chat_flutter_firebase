@@ -3,6 +3,7 @@ import 'package:chat_flutter_firebase/chats/controllers/chats_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chats_state.dart';
 import 'package:chat_flutter_firebase/chats/widgets/chat_creation_dialog.dart';
 import 'package:chat_flutter_firebase/chats/widgets/chat_list.dart';
+import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
 import 'package:chat_flutter_firebase/common/widgets/app_drawer.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
@@ -29,10 +30,10 @@ class ChatListPage extends HookWidget {
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(
                 bottom: Radius.circular(Sizes.borderRadius1))),
-        title: const Text('Чаты'),
+        title: const Text(ChatTexts.chatListAppBarTitleRu),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () {
               navigation.goNamed(Routes.search.routeName);
             },
@@ -41,7 +42,13 @@ class ChatListPage extends HookWidget {
       ),
       drawer: const AppDrawer(),
       body: BlocConsumer<ChatsCubit, ChatsState>(
-        listener: (context, state) {},
+        listener: (context, state) {
+          if (state.status == ChatsStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(state.message),
+            ));
+          }
+        },
         buildWhen: (prev, next) =>
             prev.status != next.status ||
             prev.userChats.length != next.userChats.length,
@@ -50,7 +57,7 @@ class ChatListPage extends HookWidget {
             return const Center(child: CircularProgressIndicator());
           }
           return state.userChats.isEmpty
-              ? const Center(child: Text('К сожалению чатов нет'))
+              ? const Center(child: Text(ChatTexts.noUserChatsMessageRu))
               : const ChatList(); //list
         },
       ),

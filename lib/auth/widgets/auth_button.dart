@@ -33,10 +33,10 @@ class AuthButton extends StatelessWidget {
                 .createUserByEmailAndPassword(email, password, username)
                 : await authCubit
                 .signInByEmailAndPassword(email, password);
-            if(authCubit.state.status != AuthStatus.error) {
-              router.goNamed(Routes.chats.routeName);
+            authCubit.state.status != AuthStatus.error
+                ? router.goNamed(Routes.chats.routeName)
+                : authCubit.resetState();
             }
-          }
         },
         child: Text(isRegistration
             ? AuthText.doRegisterRu

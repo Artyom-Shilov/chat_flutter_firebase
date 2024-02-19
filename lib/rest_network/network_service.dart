@@ -12,4 +12,5 @@ abstract interface class NetworkService {
   Future<List<ChatInfo>> getChatsByUser(String userId);
   Future<List<UserInfo>> getChatMembers(ChatInfo chatInfo);
   Future<List<ChatInfo>> searchForChats(String searchValue);
+  Future<void> joinChat(ChatInfo chatInfo, UserInfo userInfo);
 }

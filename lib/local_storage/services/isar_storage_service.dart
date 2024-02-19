@@ -29,29 +29,23 @@ class IsarStorageService implements LocalStorageService {
 
   @override
   Future<void> saveCurrentAppUser(LocalUserInfo userInfo) async {
-    log('save user');
     await _isar.writeTxn(() async {
       await _isar.localUserInfos.put(userInfo);
     });
-    log('save user end');
   }
 
   @override
   Future<void> deleteCurrentAppUser() async {
-    log('delete user');
     await _isar.writeTxn(() async {
       await _isar.localUserInfos.where().deleteAll();
     });
-    log('delete user end');
   }
   
   @override
   Future<void> saveUserChats(LocalUserChats userChats) async {
-    log('save local chats');
     await _isar.writeTxn(() async {
       await _isar.localUserChats.putByIndex('userId', userChats);
     });
-    log('save local chats end');
   }
 
   @override
