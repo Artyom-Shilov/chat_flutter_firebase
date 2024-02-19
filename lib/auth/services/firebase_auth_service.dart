@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:chat_flutter_firebase/app_models/app_user.dart';
+import 'package:chat_flutter_firebase/app_models/user_info.dart' as app_models;
 import 'package:chat_flutter_firebase/auth/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -8,14 +8,14 @@ class FirebaseAuthService implements AuthService {
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleAuthProvider _googleAuthProvider = GoogleAuthProvider();
-  final _transformer = StreamTransformer<User?, AppUser?>.fromHandlers(
+  final _transformer = StreamTransformer<User?, app_models.UserInfo?>.fromHandlers(
       handleData: (data, sink) {
-        data == null ? sink.add(null) : sink.add(AppUser.fromFirebaseAuthUser(data));
+        data == null ? sink.add(null) : sink.add(app_models.UserInfo.fromFirebaseAuthUser(data));
       }
   );
 
   @override
-  Stream<AppUser?> authStateChanges() =>
+  Stream<app_models.UserInfo?> authStateChanges() =>
       _firebaseAuth.authStateChanges().transform(_transformer);
 
   @override

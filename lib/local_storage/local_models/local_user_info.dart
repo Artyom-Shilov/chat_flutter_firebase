@@ -1,4 +1,4 @@
-import 'package:chat_flutter_firebase/app_models/app_user.dart';
+import 'package:chat_flutter_firebase/app_models/user_info.dart';
 import 'package:isar/isar.dart';
 
 part 'local_user_info.g.dart';
@@ -6,22 +6,23 @@ part 'local_user_info.g.dart';
 @collection
 class LocalUserInfo {
 
-  LocalUserInfo._();
+  LocalUserInfo._(this.userId);
 
   LocalUserInfo({
     this.name,
     this.email,
     this.photoUrl,
-    this.userId,
+    required this.userId,
 });
 
   String? name;
   String? email;
-  String? userId;
+  @Index()
+  String userId;
   String? photoUrl;
   Id id = Isar.autoIncrement;
 
-  factory LocalUserInfo.fromAppUser(AppUser appUser) {
+  factory LocalUserInfo.fromUserInfo(UserInfo appUser) {
     return LocalUserInfo(
       name: appUser.name,
       email: appUser.email,

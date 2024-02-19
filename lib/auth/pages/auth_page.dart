@@ -19,7 +19,7 @@ class AuthPage extends HookWidget {
     final processingCubit = BlocProvider.of<AuthProcessingCubit>(context);
     final orientation = MediaQuery.orientationOf(context);
     final isRegistration = processingCubit.state.isRegistration;
-    final GlobalKey<FormState> formKey = useState(GlobalKey<FormState>()).value;
+    final GlobalKey<FormState> formKey = useRef(GlobalKey<FormState>()).value;
     return Scaffold(
       body: GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
