@@ -1,4 +1,6 @@
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
+import 'package:chat_flutter_firebase/auth/controllers/auth_state.dart';
+import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
@@ -15,19 +17,30 @@ class InitialScreen extends HookWidget {
     final navigation = GoRouter.of(context);
     final authCubit = BlocProvider.of<AuthCubit>(context);
     useEffect(() {
-      GetIt.I.get<LocalStorageService>().getSavedAppUser().then((user) {
+      GetIt.I.get<LocalStorageService>().getSavedAppUser().then((user) async {
         if (user == null) {
           navigation.goNamed(Routes.signIn.routeName);
         } else {
-          authCubit.setUserFromLocalStorage(user);
-          navigation.goNamed(Routes.chats.routeName);
+          await authCubit.setAppUser();
+          authCubit.state.status != AuthStatus.error
+              ? navigation.goNamed(Routes.chats.routeName)
+              : navigation.goNamed(Routes.signIn.routeName);
         }
       });
       return null;
-    });
+    }, ['key']);
     //TODO probably splash screen
-    return const Center(
-      child: CircularProgressIndicator(),
+    return BlocListener<AuthCubit, AuthState>(
+      listenWhen: (prev, next) => prev.status != next.status,
+      listener: (context, state) {
+        if (state.status == AuthStatus.error) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
+      child: const Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }
