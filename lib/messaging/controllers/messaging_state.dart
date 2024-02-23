@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:chat_flutter_firebase/app_models/chat_info.dart';
 import 'package:chat_flutter_firebase/app_models/message.dart';
 import 'package:chat_flutter_firebase/app_models/user_info.dart';
@@ -11,7 +13,7 @@ enum MessagingStatus {
   error
 }
 
-@freezed
+@Freezed(makeCollectionsUnmodifiable: false)
 class MessagingState with _$MessagingState {
   const factory MessagingState({
     required MessagingStatus status,

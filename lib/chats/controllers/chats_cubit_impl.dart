@@ -104,7 +104,7 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
   }
 
   @override
-  Future<void> removeChat(ChatInfo chatInfo) {
+  Future<void> leaveChat(ChatInfo chatInfo) {
     // TODO: implement removeChat
     throw UnimplementedError();
   }

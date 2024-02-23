@@ -2,9 +2,10 @@ import 'package:chat_flutter_firebase/app_models/chat_info.dart';
 import 'package:chat_flutter_firebase/auth/pages/auth_page.dart';
 import 'package:chat_flutter_firebase/chats/pages/chats_page.dart';
 import 'package:chat_flutter_firebase/chats/pages/chats_search_page.dart';
-import 'package:chat_flutter_firebase/common/initial_screen.dart';
+import 'package:chat_flutter_firebase/common/pages/initial_screen.dart';
 import 'package:chat_flutter_firebase/connectivity/network_connectivity.dart';
 import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
+import 'package:chat_flutter_firebase/files_handling/file_handler.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/messaging_cubit.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/messaging_cubit_impl.dart';
@@ -64,7 +65,8 @@ class AppNavigation {
                       networkConnectivity: GetIt.I.get<NetworkConnectivity>(),
                       localStorageService: GetIt.I.get<LocalStorageService>(),
                       networkService: GetIt.I.get<NetworkService>(),
-                      eventsListening: GetIt.I.get<DatabaseEventsListening>()),
+                      eventsListening: GetIt.I.get<DatabaseEventsListening>(),
+                      fileHandler: GetIt.I.get<FileHandler>()),
                   child: const ChatMessagingPage()))
         ]),
   ]);

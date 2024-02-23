@@ -30,9 +30,15 @@ class FirebaseEventsListening implements DatabaseEventsListening {
   );
 
   @override
-  Stream<Message> chatMessagesStream(ChatInfo chatInfo) {
+  Stream<Message> newMessagesStream(ChatInfo chatInfo) {
     final messagesRef = FirebaseDatabase.instance.ref('${Location.messages.name}/${chatInfo.name}');
     return messagesRef.onChildAdded.transform(_messageTransformer);
+  }
+
+  @override
+  Stream<Message> messageUpdateStream(ChatInfo chatInfo) {
+    final messagesRef = FirebaseDatabase.instance.ref('${Location.messages.name}/${chatInfo.name}');
+    return messagesRef.onChildChanged.transform(_messageTransformer);
   }
 
   @override

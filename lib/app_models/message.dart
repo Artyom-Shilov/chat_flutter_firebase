@@ -7,6 +7,8 @@ part 'message.g.dart';
 
 enum MessageType {
   text,
+  image,
+  video
 }
 
 @freezed
@@ -16,6 +18,7 @@ class Message with _$Message {
     required String senderId,
     required MessageType type,
     required int millisSinceEpoch,
+    String? fileRef,
     String? text,
   }) = _Message;
 

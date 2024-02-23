@@ -1,11 +1,13 @@
 import 'package:chat_flutter_firebase/chats/controllers/chats_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chats_state.dart';
+import 'package:chat_flutter_firebase/common/date_formatting.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
 import 'package:chat_flutter_firebase/common/widgets/circle_cashed_network_image.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class ChatList extends StatelessWidget {
   const ChatList({Key? key}) : super(key: key);
@@ -54,17 +56,30 @@ class ChatList extends StatelessWidget {
                                     )))
                           : CircleCashedNetworkImage(
                               url: chat.photoUrl!, radius: 30),
-                      title: Text(chat.name),
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                        Text(chat.name),
+                        if (chat.lastMessageTime != null)
+                        Text(DateFormatter.I.formatDate(chat.lastMessageTime!))
+                      ]),
                       subtitle: lastUser != null
                           ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('${chat.lastUserNameText}:'),
-                                const SizedBox(width: 10),
-                                Text(chat.lastMessageText ?? '')
-                              ],
-                            )
-                          : null),
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('${chat.lastUserNameText}:'),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    chat.lastMessageText == null
+                                        ? ''
+                                        : (chat.lastMessageText!.length > 10
+                                        ?
+                                    '${chat.lastMessageText!.substring(
+                                        0, 10)}...'
+                                        : chat.lastMessageText!))
+                                ],
+                              )
+                            : null),
                 ),
               ),
             );

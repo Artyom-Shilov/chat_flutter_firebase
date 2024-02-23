@@ -38,9 +38,11 @@ class InitialScreen extends HookWidget {
               .showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
-      child: const Center(
-        child: CircularProgressIndicator(),
+      child: const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
       ),
-    );
+      );
   }
 }
