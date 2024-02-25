@@ -1,3 +1,4 @@
+import 'package:chat_flutter_firebase/local_storage/local_models/local_chat_member.dart';
 import 'package:chat_flutter_firebase/local_storage/local_models/local_user_info.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -11,7 +12,7 @@ class UserInfo with _$UserInfo {
   const UserInfo._();
 
   const factory UserInfo({
-    required String id,
+    @JsonKey(includeToJson: false) required String id,
     String? name,
     String? email,
     String? photoUrl,
@@ -35,6 +36,15 @@ class UserInfo with _$UserInfo {
         email: localUser.email,
         photoUrl: localUser.photoUrl,
         id: localUser.userId,
+    );
+  }
+
+  factory UserInfo.fromLocalChatMember(LocalChatMember localChatMember) {
+    return UserInfo(
+      name: localChatMember.name,
+      email: localChatMember.email,
+      photoUrl: localChatMember.photoUrl,
+      id: localChatMember.userId,
     );
   }
 }

@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:chat_flutter_firebase/app_models/chat_info.dart';
+import 'package:chat_flutter_firebase/app_models/message.dart';
 import 'package:chat_flutter_firebase/app_models/user_info.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
 import 'package:dio/dio.dart';
@@ -12,7 +11,8 @@ enum Location {
   profiles,
   chats,
   chatMembers,
-  userChats
+  userChats,
+  messages,
 }
 
 class DioService implements NetworkService {
@@ -30,22 +30,27 @@ class DioService implements NetworkService {
   @override
   Future<void> saveUser(UserInfo user) async {
     final json = user.toJson();
-    json.remove('id');
     await _dio.put('/${Location.profiles.name}/${user.id}.json', data: json);
   }
 
   @override
-  Future<bool> isUserInDatabase(UserInfo user) async {
-    final response = await _dio.get<Map<dynamic, dynamic>>(
-        '/${Location.profiles.name}.json',
-        queryParameters: {'orderBy': r'"$key"', 'equalTo': '"${user.id}"'});
-    return response.data!.isNotEmpty;
-  }
-
-  @override
-  Future<List<UserInfo>> getChatMembers(ChatInfo chatInfo) {
-    // TODO: implement getChatMembers
-    throw UnimplementedError();
+  Future<List<UserInfo>> getChatMembers(ChatInfo chatInfo) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+        '/${Location.chatMembers.name}/.json',
+        queryParameters: {
+          'orderBy': r'"$key"',
+          'equalTo': '"${chatInfo.name}"'
+        });
+    final output = <UserInfo>[];
+    if (response.data!.isEmpty) {
+      return output;
+    }
+    final users = response.data![chatInfo.name] as Map<String, dynamic>;
+    for (final key in users.keys) {
+      output.add(UserInfo.fromJson(
+          (users[key] as Map<String, dynamic>)..putIfAbsent('id', () => key)));
+    }
+    return output;
   }
 
   @override
@@ -66,6 +71,18 @@ class DioService implements NetworkService {
   }
 
   @override
+  Future<UserInfo?> getUserInfoById(String id) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+        '/${Location.profiles.name}.json',
+        queryParameters: {'orderBy': r'"$key"', 'equalTo': '"$id"'});
+    log('getUserInfoById response ${response.data}');
+    if (response.data!.isEmpty) {
+      return null;
+    }
+    return UserInfo.fromJson(response.data![id]..putIfAbsent('id', () => id));
+  }
+
+  @override
   Future<bool> isChatInDatabase(String chatName) async {
     final response = await _dio.get<Map<dynamic, dynamic>>(
         '/${Location.chats.name}.json',
@@ -77,9 +94,7 @@ class DioService implements NetworkService {
   @override
   Future<void> saveChat(ChatInfo chatInfo, UserInfo userInfo) async {
     final chatJson = chatInfo.toJson();
-    chatJson.remove('name');
     final userJson = userInfo.toJson();
-    userJson.remove('id');
     await _dio.put('/${Location.chats.name}/${chatInfo.name}.json', data: chatJson);
     await _dio.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
     await _dio.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
@@ -109,10 +124,54 @@ class DioService implements NetworkService {
   @override
   Future<void> joinChat(ChatInfo chatInfo, UserInfo userInfo) async {
     final chatJson = chatInfo.toJson();
-    chatJson.remove('name');
     final userJson = userInfo.toJson();
-    userJson.remove('id');
     await _dio.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
     await _dio.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
+  }
+
+  @override
+  Future<void> sendMessage(Message message, ChatInfo chatInfo) async {
+    final messageJson = message.toJson();
+    await _dio.put('/${Location.messages.name}/${chatInfo.name}/${message.id}.json', data: messageJson);
+  }
+
+  @override
+  Future<List<Message>> getChatMessages(ChatInfo chatInfo) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+        '/${Location.messages.name}.json',
+        queryParameters: {'orderBy': r'"$key"', 'equalTo': '"${chatInfo.name}"'});
+    final output = <Message>[];
+    if (response.data!.isEmpty) {
+      return output;
+    }
+    final messages = response.data![chatInfo.name] as Map<String, dynamic>;
+    for (final key in messages.keys) {
+      output.add(Message.fromJson((messages[key] as Map<String, dynamic>)
+        ..putIfAbsent('id', () => key)));
+    }
+    return output;
+  }
+
+  @override
+  Future<void> updateChat(ChatInfo chatInfo) async {
+    final chatJson = chatInfo.toJson();
+    await _dio.put('/${Location.chats.name}/${chatInfo.name}.json', data: chatJson);
+  }
+
+  @override
+  Future<void> updateUserChats(
+      ChatInfo chatInfo, List<UserInfo> chatUsers) async {
+    final chatJson = chatInfo.toJson();
+    final Map<String, dynamic> requestBody = {};
+    for (final user in chatUsers) {
+      requestBody.putIfAbsent('${user.id}/${chatInfo.name}', () => chatJson);
+    }
+    await _dio.patch('/${Location.userChats.name}.json', data: requestBody);
+  }
+
+  @override
+  Future<void> leaveChat(ChatInfo chatInfo, UserInfo userInfo) async {
+    await _dio.delete('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json');
+    await _dio.delete('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json');
   }
 }

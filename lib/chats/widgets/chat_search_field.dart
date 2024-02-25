@@ -24,7 +24,7 @@ class ChatSearchField extends StatelessWidget {
           await searchCubit.validateChatSearch();
           if (searchCubit.state.chatSearchErrorText == null) {
             searchCubit.resetChatSearchError();
-            searchCubit.searchChatsByName(searchCubit.chatSearchController.text, authCubit.user!);
+            searchCubit.searchChatsByName(authCubit.user!);
           }
         },
       ),

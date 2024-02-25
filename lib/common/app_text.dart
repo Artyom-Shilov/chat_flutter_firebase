@@ -22,12 +22,13 @@ abstract class AuthErrorTexts {
   static const String signInByGoogleRu = 'Ошибка в процессе авторизации через Google-аккаунт';
   static const String signOut = 'Ошибка в процессе выхода';
   static const String noConnectionRU = 'Нет подкючения к сети';
+  static const String setAppUser = 'Ошибка входа';
 }
 
 abstract class ChatTexts {
 
   static const String chatListAppBarTitleRu = 'Мои чаты';
-  static const String noUserChatsMessageRu = 'К сожалению, вы не состоите ни в одном чате. Воспользуйтесь поиском существующих или создайте свой';
+  static const String noUserChatsMessageRu = 'К сожалению, вы не состоите ни в одном чате. Воспользуйтесь поиском или создайте свой.';
 
   static const String doEnterChatNameRu = 'Введите название чата';
   static const String createRu = 'Создать';
@@ -42,8 +43,6 @@ abstract class ChatTexts {
   static const String initSearchMessageRu = 'Пожалуйста, введите значение для поиска';
   static const String userAlreadyJoinedMarkRu = 'Уже состою';
   static const String doJoinRu = 'Вступить';
-
-
 }
 
 abstract class ChatErrorsTexts {
@@ -53,4 +52,26 @@ abstract class ChatErrorsTexts {
   static const String searchChats = 'Ошибка в процессе поска чатов';
   static const String noConnectionRU = 'Нет подключения к сети';
   static const String joinChatRu = 'Ошибка в процессе присоединения к чату';
+  static const String leaveChatRu = 'Ошибка в процессе выхода из чата';
+}
+
+abstract class PopUpMenuTexts {
+  static const String leaveChatRu = 'Покинуть чат';
+}
+
+abstract class MessagingTexts {
+  static const memberLeftChatRu = 'Пользователь покинул чат';
+  static const memberJoinedRu = 'присоединился';
+  static const addPhotoFromGalleryRu = 'Выбрать фото из галерии';
+  static const addVideoFromGalleryRu = 'Выбрать видео из галерии';
+  static const addPhotoFromCameraRu = 'Снять фото';
+  static const messageInputHint = 'Сообщение';
+}
+
+abstract class MessagingErrorsTexts {
+
+  static const String loadMessagesRu = 'Ошибка получения сообщений';
+  static const String sendMessageRu = 'Ошибка отправки сообщений';
+  static const String noConnectionRu = 'Нет доступа к сети';
+
 }
