@@ -60,7 +60,6 @@ class ChatSearchCubitImpl extends Cubit<SearchState> implements ChatSearchCubit 
 
   @override
   Future<void> searchChatsByName(String searchValue, UserInfo userInfo) async {
-    DateTime.now().millisecondsSinceEpoch;
     emit(state.copyWith(status: SearchStatus.loading));
     try {
       if (!await _networkConnectivity.checkNetworkConnection()) {
@@ -95,8 +94,10 @@ class ChatSearchCubitImpl extends Cubit<SearchState> implements ChatSearchCubit 
         return;
       }
       await _networkService.joinChat(chatInfo, userInfo);
+
       final listForUpdate = List.of(state.searchResult);
       final index = listForUpdate.indexOf((chat: chatInfo, isJoined: false));
+      print(index);
       listForUpdate[index] = (chat: chatInfo, isJoined: true);
       emit(state.copyWith(searchResult: listForUpdate));
     } catch (e, stackTrace) {

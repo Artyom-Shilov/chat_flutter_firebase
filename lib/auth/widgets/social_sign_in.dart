@@ -1,5 +1,4 @@
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
-import 'package:chat_flutter_firebase/auth/controllers/auth_processing_cubit.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_state.dart';
 import 'package:chat_flutter_firebase/auth/widgets/social_auth_button.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
@@ -17,7 +16,6 @@ class SocialSignIn extends StatelessWidget {
   Widget build(BuildContext context) {
     final authCubit = BlocProvider.of<AuthCubit>(context);
     final router = GoRouter.of(context);
-    final processingCubit = BlocProvider.of<AuthProcessingCubit>(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -36,12 +34,9 @@ class SocialSignIn extends StatelessWidget {
                 onPressed: () async {
                   formKey.currentState!.reset();
                   await authCubit.signInByGoogle();
-                  if (authCubit.state.status != AuthStatus.error) {
-                    router.goNamed(Routes.chats.routeName);
-                    processingCubit.clearTextControllers();
-                  } else {
-                    authCubit.resetState();
-                  }
+                  authCubit.state.status != AuthStatus.error
+                      ? router.goNamed(Routes.chats.routeName)
+                      : authCubit.resetState();
                 }),
           ],
         ),

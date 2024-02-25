@@ -26,11 +26,12 @@ class CircleCashedNetworkImage extends StatelessWidget {
         height: radius * 2,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+          image:
+          DecorationImage(image: imageProvider, fit: BoxFit.cover),
         ),
       ),
-      placeholder: (context, url) => Center(child: placeholder),
-      errorWidget: (context, url, error) => Center(child: errorWidget),
+      placeholder: (context, url) => placeholder,
+      errorWidget: (context, url, error) => errorWidget,
     );
   }
 }

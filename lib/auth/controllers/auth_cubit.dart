@@ -13,6 +13,6 @@ abstract interface class AuthCubit extends Cubit<AuthState> {
   Future<void> createUserByEmailAndPassword(String email, String password, String? username);
   Future<void> signOut();
   Future<void> signInByGoogle();
-  Future<void> setAppUser();
+  void setUserFromLocalStorage(LocalUserInfo localUserInfo);
   void resetState();
 }

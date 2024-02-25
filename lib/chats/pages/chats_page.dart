@@ -6,12 +6,10 @@ import 'package:chat_flutter_firebase/chats/widgets/chat_list.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
 import 'package:chat_flutter_firebase/common/widgets/app_drawer.dart';
-import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 class ChatListPage extends HookWidget {
@@ -23,12 +21,8 @@ class ChatListPage extends HookWidget {
     final authCubit = BlocProvider.of<AuthCubit>(context);
     final navigation = GoRouter.of(context);
     useEffect(() {
-      GetIt.I.get<DatabaseEventsListening>().currentUserId =
-          authCubit.user!.id;
       chatsCubit.loadChatsByUserId(authCubit.user!.id);
-      return () {
-        GetIt.I.get<DatabaseEventsListening>().currentUserId = null;
-      };
+      return null;
     }, ['key']);
     return Scaffold(
       appBar: AppBar(
@@ -55,7 +49,9 @@ class ChatListPage extends HookWidget {
             ));
           }
         },
-        buildWhen: (prev, next) => prev.status != next.status,
+        buildWhen: (prev, next) =>
+            prev.status != next.status ||
+            prev.userChats.length != next.userChats.length,
         builder: (context, state) {
           if (state.status == ChatsStatus.loading) {
             return const Center(child: CircularProgressIndicator());

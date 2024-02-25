@@ -8,12 +8,9 @@ import 'package:chat_flutter_firebase/chats/controllers/chats_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chats_state.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/connectivity/network_connectivity.dart';
-import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
 import 'package:chat_flutter_firebase/local_storage/local_models/local_user_chats.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
-import 'package:chat_flutter_firebase/rest_network/dio_service.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/widgets.dart';
 
 class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
@@ -21,23 +18,14 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
   ChatsCubitImpl({
     required NetworkService networkService,
     required LocalStorageService storageService,
-    required NetworkConnectivity networkConnectivity,
-    required DatabaseEventsListening eventsListening})
+    required NetworkConnectivity networkConnectivity})
       : _networkConnectivity = networkConnectivity,
         _storageService = storageService,
         _networkService = networkService,
-        _eventsListening = eventsListening,
         super(const ChatsState(status: ChatsStatus.loading)) {
-    _statesSubscription = stream.listen((event) {
-      if (_chatUpdatesSubscription == null &&
-          event.status == ChatsStatus.ready &&
-          _eventsListening.currentUserId != null) {
-        _chatUpdatesSubscription = _eventsListening.userChatsUpdates().listen((update) {
-         final index = state.userChats.indexWhere((element) => element.name == update.name);
-         final updatedChats = List.of(state.userChats);
-         updatedChats[index] = update;
-         emit(state.copyWith(userChats: updatedChats));
-        });
+    stream.listen((event) {
+      if (event.status == ChatsStatus.ready) {
+
       }
     });
   }
@@ -46,10 +34,8 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
 
   //TODO Listening fot updates in userChats and change state and local storage
 
-  StreamSubscription<ChatInfo>? _chatUpdatesSubscription;
-  StreamSubscription<ChatsState>? _statesSubscription;
+  StreamSubscription<ChatInfo>? chatInfoSubscription;
   final NetworkService _networkService;
-  final DatabaseEventsListening _eventsListening;
   final LocalStorageService _storageService;
   final NetworkConnectivity _networkConnectivity;
 
@@ -104,7 +90,7 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
   }
 
   @override
-  Future<void> leaveChat(ChatInfo chatInfo) {
+  Future<void> removeChat(ChatInfo chatInfo) {
     // TODO: implement removeChat
     throw UnimplementedError();
   }
@@ -141,8 +127,7 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
 
   @override
   Future<void> close() async {
-    await _chatUpdatesSubscription?.cancel();
-    await _statesSubscription?.cancel();
+    await chatInfoSubscription?.cancel();
     chatCreationController.dispose();
     await super.close();
   }

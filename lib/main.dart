@@ -9,10 +9,6 @@ import 'package:chat_flutter_firebase/chats/controllers/chats_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chats_cubit_impl.dart';
 import 'package:chat_flutter_firebase/connectivity/network_connectivity.dart';
 import 'package:chat_flutter_firebase/connectivity/network_connectivity_impl.dart';
-import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
-import 'package:chat_flutter_firebase/database_events/firebase_events_listening.dart';
-import 'package:chat_flutter_firebase/files_handling/file_handler.dart';
-import 'package:chat_flutter_firebase/files_handling/firebase_file_handler.dart';
 import 'package:chat_flutter_firebase/local_storage/services/isar_storage_service.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
@@ -35,8 +31,6 @@ void main() async {
   GetIt.I.registerSingleton<LocalStorageService>(storage);
   GetIt.I.registerSingleton<NetworkService>(DioService());
   GetIt.I.registerSingleton<NetworkConnectivity>(NetworkConnectivityImpl());
-  GetIt.I.registerSingleton<DatabaseEventsListening>(FirebaseEventsListening());
-  GetIt.I.registerSingleton<FileHandler>(FirebaseFileHandler());
   SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
   runApp(const MyApp());
@@ -63,8 +57,7 @@ class MyApp extends HookWidget {
               create: (context) => ChatsCubitImpl(
                   networkService: GetIt.I.get<NetworkService>(),
                   storageService: GetIt.I.get<LocalStorageService>(),
-                  networkConnectivity: GetIt.I.get<NetworkConnectivity>(),
-                  eventsListening: GetIt.I.get<DatabaseEventsListening>())),
+                  networkConnectivity: GetIt.I.get<NetworkConnectivity>())),
         BlocProvider<ChatSearchCubit>(
             create: (context) =>  ChatSearchCubitImpl(
                 storageService: GetIt.I.get<LocalStorageService>(),
