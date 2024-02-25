@@ -15,7 +15,8 @@ class FirebaseAuthService implements AuthService {
   );
 
   @override
-  Stream<User?> authStateChanges() => _firebaseAuth.authStateChanges();
+  Stream<app_models.UserInfo?> authStateChanges() =>
+      _firebaseAuth.authStateChanges().transform(_transformer);
 
   @override
   Future<void> createUserByEmailAndPassword(String email, String password) async {

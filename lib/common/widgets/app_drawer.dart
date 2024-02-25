@@ -15,20 +15,16 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final authCubit = BlocProvider.of<AuthCubit>(context);
     final navigation = GoRouter.of(context);
-    print(authCubit.user);
+    print(authCubit.user?.email);
     return Drawer(
       child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 50),
         children: [
           Center(
-            child: authCubit.user!.photoUrl != null
-                ? CircleCashedNetworkImage(
+            child: CircleCashedNetworkImage(
                 url: authCubit.user!.photoUrl!,
                 radius: 40)
-                : CircleAvatar(
-              radius: 40,
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.3),)
-          ) ,
+          ),
           const SizedBox(height: Sizes.verticalInset2),
           Text(
               authCubit.user?.name ??
