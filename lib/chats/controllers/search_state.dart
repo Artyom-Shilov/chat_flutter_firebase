@@ -11,7 +11,7 @@ enum SearchStatus {
   error
 }
 
-@freezed
+@Freezed(makeCollectionsUnmodifiable: false)
 class SearchState with _$SearchState {
   const factory SearchState({
     required SearchStatus status,

@@ -39,7 +39,7 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       }
     });
     stream.listen((event) {
-      log('event: ${event}');
+      log('event: ${event.user?.name}');
     });
   }
 
@@ -87,7 +87,6 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       await _receivedFirebaseUserCompleter.future;
       await _addUserToDatabaseIfAbsent();
       final actualUserInfo = await _networkService.getUserInfoById(state.firebaseUser!.uid);
-      print(actualUserInfo);
       emit(state.copyWith(
           user: actualUserInfo,
           status: AuthStatus.signedIn));

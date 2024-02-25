@@ -5,6 +5,7 @@ import 'package:chat_flutter_firebase/messaging/controllers/messaging_state.dart
 import 'package:chat_flutter_firebase/messaging/widgets/message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:collection/collection.dart';
 
 class MessagesList extends StatelessWidget {
   const MessagesList({Key? key}) : super(key: key);
@@ -16,24 +17,28 @@ class MessagesList extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(Sizes.verticalInset2),
       child: BlocBuilder<MessagingCubit, MessagingState>(
-        buildWhen: (prev, next) => prev.messages != next.messages,
+          buildWhen: (prev, next) =>
+          prev.messages != next.messages || prev.members != next.members,
         builder: (context, state) {
           final messages = messagingCubit.messages;
-          return ListView.separated(
-              reverse: true,
-              controller: messagingCubit.messageListController,
-              separatorBuilder: (context, index) =>
-                  const SizedBox(height: Sizes.verticalInset2),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                final senderInfo = messagingCubit.state.members
-                    .firstWhere((element) => element.id == message.senderId);
-                return ChatMessage(
-                    message: message,
-                    senderInfo: senderInfo,
-                    isAnotherMember: senderInfo.id != authCubit.user!.id);
-              });
+          return RefreshIndicator(
+            onRefresh: () => messagingCubit.init(),
+            child: ListView.separated(
+                reverse: true,
+                controller: messagingCubit.messageListController,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 40),
+                itemCount: messages.length,
+                itemBuilder: (context, index) {
+                  final message = messages[index];
+                  final senderInfo = messagingCubit.state.members.
+                      firstWhereOrNull((element) => element.id == message.senderId);
+                  return ChatMessage(
+                      message: message,
+                      senderInfo: senderInfo,
+                      isAnotherMember: senderInfo?.id != authCubit.user!.id);
+                }),
+          );
         },
       ),
     );

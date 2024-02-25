@@ -17,6 +17,9 @@ class VideoMessageView extends StatelessWidget {
             create: (context) =>
                 VideoMessageCubitImpl(videoUrl: message.fileRef!),
             child: const VideoItem())
-        : const Center(child: Icon(Icons.downloading));
+        : const Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(child: Icon(Icons.downloading)),
+        );
   }
 }

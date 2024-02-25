@@ -16,6 +16,9 @@ class ImageMessageView extends StatelessWidget {
                 const Center(child: CircularProgressIndicator()),
             errorWidget: (context, url, error) =>
                 const Center(child: Icon(Icons.error_outline)))
-        : const Center(child: Icon(Icons.downloading));
+        : const Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Center(child: Icon(Icons.downloading)),
+        );
   }
 }

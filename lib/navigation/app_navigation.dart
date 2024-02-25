@@ -5,7 +5,8 @@ import 'package:chat_flutter_firebase/chats/pages/chats_search_page.dart';
 import 'package:chat_flutter_firebase/common/pages/initial_screen.dart';
 import 'package:chat_flutter_firebase/connectivity/network_connectivity.dart';
 import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
-import 'package:chat_flutter_firebase/files_handling/file_handler.dart';
+import 'package:chat_flutter_firebase/files_handling/database_file_handler.dart';
+import 'package:chat_flutter_firebase/files_handling/local_file_handler.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/messaging_cubit.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/messaging_cubit_impl.dart';
@@ -54,7 +55,15 @@ class AppNavigation {
                   GoRoute(
                       path: Routes.search.routeName,
                       name: Routes.search.routeName,
-                    builder: (context, state) => const ChatSearchPage()
+                      pageBuilder: (context, state) => CustomTransitionPage(
+                          key: state.pageKey,
+                          child: const ChatSearchPage(),
+                          transitionsBuilder: (context, animation, _, child) =>
+                              SlideTransition(
+                                  position: animation.drive(Tween<Offset>(
+                                      begin: const Offset(1, 0),
+                                      end: Offset.zero)),
+                                  child: child))
                   ),
                   GoRoute(
                       path: '${Routes.messaging.routeName}/:${Params.chatName.name}',
@@ -66,7 +75,8 @@ class AppNavigation {
                       localStorageService: GetIt.I.get<LocalStorageService>(),
                       networkService: GetIt.I.get<NetworkService>(),
                       eventsListening: GetIt.I.get<DatabaseEventsListening>(),
-                      fileHandler: GetIt.I.get<FileHandler>()),
+                      databaseFileHandler: GetIt.I.get<DatabaseFileHandler>(),
+                      localFileHandler: GetIt.I.get<LocalFileHandler>()),
                   child: const ChatMessagingPage()))
         ]),
   ]);

@@ -8,11 +8,15 @@ abstract interface class ChatsCubit extends Cubit<ChatsState> {
   ChatsCubit(super.initialState);
 
   Future<void> createChat(ChatInfo chatInfo, UserInfo userInfo);
-  Future<void> leaveChat(ChatInfo chatInfo);
+  Future<void> leaveChat(ChatInfo chatInfo, UserInfo userInfo);
   Future<void> loadChatsByUserId(String userId);
 
   Future<void> validateChatName();
   TextEditingController get chatCreationController;
   void resetChatCreationError();
   void clearChatName();
+
+  List<ChatInfo> get getUserChats;
+  Future<void> setStateStatus({Duration? delay, required ChatsStatus status});
+
 }

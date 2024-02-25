@@ -5,6 +5,7 @@ import 'package:chat_flutter_firebase/chats/widgets/chat_creation_dialog.dart';
 import 'package:chat_flutter_firebase/chats/widgets/chat_list.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
+import 'package:chat_flutter_firebase/common/snackbars.dart';
 import 'package:chat_flutter_firebase/common/widgets/app_drawer.dart';
 import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
@@ -50,18 +51,25 @@ class ChatListPage extends HookWidget {
       body: BlocConsumer<ChatsCubit, ChatsState>(
         listener: (context, state) {
           if (state.status == ChatsStatus.error) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(state.message),
-            ));
+            SnackBars.showCommonSnackBar(state.message, context);
+            chatsCubit.setStateStatus(status: ChatsStatus.ready);
           }
         },
-        buildWhen: (prev, next) => prev.status != next.status,
         builder: (context, state) {
           if (state.status == ChatsStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
           return state.userChats.isEmpty
-              ? const Center(child: Text(ChatTexts.noUserChatsMessageRu))
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(40),
+                    child: Card(
+                        child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(ChatTexts.noUserChatsMessageRu),
+                    )),
+                  ),
+                )
               : const ChatList(); //list
         },
       ),

@@ -1,6 +1,5 @@
 import 'package:chat_flutter_firebase/app_models/user_info.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_state.dart';
-import 'package:chat_flutter_firebase/local_storage/local_models/local_user_info.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 

@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 abstract interface class ChatSearchCubit extends Cubit<SearchState> {
   ChatSearchCubit(super.initialState);
 
-  Future<void> searchChatsByName(String searchValue, UserInfo userInfo);
+  Future<void> searchChatsByName(UserInfo userInfo);
   Future<void> joinChat(ChatInfo chatInfo, UserInfo userInfo);
 
   Future<void> validateChatSearch();
@@ -15,4 +15,7 @@ abstract interface class ChatSearchCubit extends Cubit<SearchState> {
   void resetChatSearchError();
   void clearSearchValue();
   void resetSearchResult();
+
+  List<({ChatInfo chat, bool isJoined})> get searchResult;
+  Future<void> setStateStatus({Duration? delay, required SearchStatus status});
 }

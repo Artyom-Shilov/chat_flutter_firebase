@@ -9,49 +9,69 @@ import 'package:chat_flutter_firebase/chats/controllers/chats_state.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/connectivity/network_connectivity.dart';
 import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
-import 'package:chat_flutter_firebase/local_storage/local_models/local_user_chats.dart';
+import 'package:chat_flutter_firebase/local_storage/local_models/local_chat_info.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
-import 'package:chat_flutter_firebase/rest_network/dio_service.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/widgets.dart';
 
 class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
-
-  ChatsCubitImpl({
-    required NetworkService networkService,
-    required LocalStorageService storageService,
-    required NetworkConnectivity networkConnectivity,
-    required DatabaseEventsListening eventsListening})
+  ChatsCubitImpl(
+      {required NetworkService networkService,
+      required LocalStorageService storageService,
+      required NetworkConnectivity networkConnectivity,
+      required DatabaseEventsListening eventsListening})
       : _networkConnectivity = networkConnectivity,
         _storageService = storageService,
         _networkService = networkService,
         _eventsListening = eventsListening,
         super(const ChatsState(status: ChatsStatus.loading)) {
     _statesSubscription = stream.listen((event) {
-      if (_chatUpdatesSubscription == null &&
+      if (_userChatsUpdatesSubscription == null &&
           event.status == ChatsStatus.ready &&
           _eventsListening.currentUserId != null) {
-        _chatUpdatesSubscription = _eventsListening.userChatsUpdates().listen((update) {
-         final index = state.userChats.indexWhere((element) => element.name == update.name);
-         final updatedChats = List.of(state.userChats);
-         updatedChats[index] = update;
-         emit(state.copyWith(userChats: updatedChats));
+        _userChatsUpdatesSubscription =
+            _eventsListening.userChatsUpdates().listen((update) {
+          final index = state.userChats
+              .indexWhere((element) => element.name == update.name);
+          final updatedChats = List.of(state.userChats);
+          updatedChats[index] = update;
+          emit(state.copyWith(userChats: updatedChats));
+          _storageService.addUserChat(LocalChatInfo.fromChatInfo(update));
         });
+      }
+      if (_removedUserChatsSubscription == null &&
+          event.status == ChatsStatus.ready &&
+          _eventsListening.currentUserId != null) {
+        _removedUserChatsSubscription =
+            _eventsListening.deletedUserChatsStream().listen((event) {
+              _storageService.deleteUserChat(LocalChatInfo.fromChatInfo(event));
+              emit(state.copyWith(
+              userChats: List.of(state.userChats)
+                ..removeWhere((element) => element.name == event.name)));
+        });
+        if (_addedUserChatSubscription == null &&
+            event.status == ChatsStatus.ready &&
+            _eventsListening.currentUserId != null) {
+          _addedUserChatSubscription =
+              _eventsListening.addedUserChatsStream().skip(_chatNumberAfterLoad).listen((event) {
+                _storageService.addUserChat(LocalChatInfo.fromChatInfo(event));
+                emit(state.copyWith(
+                userChats: List.of(state.userChats)..add(event)));
+          });
+        }
       }
     });
   }
 
-  //TODO Listening for creations in userChats and change state and local storage
-
-  //TODO Listening fot updates in userChats and change state and local storage
-
-  StreamSubscription<ChatInfo>? _chatUpdatesSubscription;
+  StreamSubscription<ChatInfo>? _userChatsUpdatesSubscription;
+  StreamSubscription<ChatInfo>? _removedUserChatsSubscription;
+  StreamSubscription<ChatInfo>? _addedUserChatSubscription;
   StreamSubscription<ChatsState>? _statesSubscription;
   final NetworkService _networkService;
   final DatabaseEventsListening _eventsListening;
   final LocalStorageService _storageService;
   final NetworkConnectivity _networkConnectivity;
+  late int _chatNumberAfterLoad;
 
   @override
   final TextEditingController chatCreationController = TextEditingController();
@@ -59,20 +79,15 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
   @override
   Future<void> createChat(ChatInfo chatInfo, UserInfo userInfo) async {
     log('create chat');
-    emit(state.copyWith(status: ChatsStatus.loading));
     try {
       if (!await _networkConnectivity.checkNetworkConnection()) {
         emit(state.copyWith(
             status: ChatsStatus.error,
             message: ChatErrorsTexts.noConnectionRU));
+        return;
       }
       await _networkService.saveChat(chatInfo, userInfo);
-      final updatedChatList = List.of(state.userChats)
-        ..add(chatInfo);
-      await _storageService.saveUserChats(
-          LocalUserChats.fromUserChats(userInfo.id, updatedChatList));
-      emit(state.copyWith(
-          status: ChatsStatus.ready, userChats: updatedChatList));
+      _storageService.addUserChat(LocalChatInfo.fromChatInfo(chatInfo));
     } catch (e, stackTrace) {
       log(stackTrace.toString());
       emit(state.copyWith(status: ChatsStatus.error, message: ChatErrorsTexts.createChatRu));
@@ -84,18 +99,16 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
     log('load user chats');
     emit(state.copyWith(status: ChatsStatus.loading));
     try {
-      final List<ChatInfo> userChats;
+      List<ChatInfo> userChats = [];
       if (await _networkConnectivity.checkNetworkConnection()) {
         userChats = await _networkService.getChatsByUser(userId);
-        _storageService.saveUserChats(LocalUserChats.fromUserChats(userId, userChats));
-        emit(state.copyWith(status: ChatsStatus.ready, userChats: userChats));
+        _storageService.saveUserChats(userChats.map((e) => LocalChatInfo.fromChatInfo(e)).toList());
       } else {
-        final localChats = (await _storageService.getChatsByUser(userId))?.chats
-            ?? [];
-        userChats =
-            localChats.map((e) => ChatInfo.fromLocalChatInfo(e)).toList();
-        emit(state.copyWith(status: ChatsStatus.ready, userChats: userChats));
+        final localChats = await _storageService.getUserChats();
+        userChats = localChats.map((e) => ChatInfo.fromLocalChatInfo(e)).toList();
       }
+      _chatNumberAfterLoad = userChats.length;
+      emit(state.copyWith(status: ChatsStatus.ready, userChats: userChats));
     } catch (e, stackTrace) {
       log(stackTrace.toString());
       emit(state.copyWith(
@@ -104,9 +117,21 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
   }
 
   @override
-  Future<void> leaveChat(ChatInfo chatInfo) {
-    // TODO: implement removeChat
-    throw UnimplementedError();
+  Future<void> leaveChat(ChatInfo chatInfo, UserInfo userInfo) async {
+    if (!await _networkConnectivity.checkNetworkConnection()) {
+      emit(state.copyWith(
+          status: ChatsStatus.error,
+          message: ChatErrorsTexts.noConnectionRU));
+      return;
+    }
+    try {
+      await _networkService.leaveChat(chatInfo, userInfo);
+      _storageService.deleteUserChat(LocalChatInfo.fromChatInfo(chatInfo));
+    } catch (e, stackTrace) {
+      log(stackTrace.toString());
+      emit(state.copyWith(
+          status: ChatsStatus.error, message: ChatErrorsTexts.leaveChatRu));
+    }
   }
 
   @override
@@ -141,9 +166,23 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
 
   @override
   Future<void> close() async {
-    await _chatUpdatesSubscription?.cancel();
+    await _userChatsUpdatesSubscription?.cancel();
+    await _removedUserChatsSubscription?.cancel();
+    await _addedUserChatSubscription?.cancel();
     await _statesSubscription?.cancel();
     chatCreationController.dispose();
     await super.close();
+  }
+
+  @override
+  List<ChatInfo> get getUserChats =>
+      state.userChats..sort((a, b) => a.name.compareTo(b.name));
+
+  @override
+  Future<void> setStateStatus({Duration? delay, required ChatsStatus status}) async {
+    delay != null
+        ? await Future.delayed(delay)
+        : null;
+    emit(state.copyWith(status: status));
   }
 }

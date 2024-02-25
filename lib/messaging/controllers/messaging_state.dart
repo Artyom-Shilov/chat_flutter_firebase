@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:chat_flutter_firebase/app_models/chat_info.dart';
 import 'package:chat_flutter_firebase/app_models/message.dart';
 import 'package:chat_flutter_firebase/app_models/user_info.dart';
@@ -21,5 +19,6 @@ class MessagingState with _$MessagingState {
     @Default([]) List<UserInfo> members ,
     @Default([]) List<Message> messages,
     @Default('') String info,
+    @Default(true) bool isTextFieldEmpty,
   }) = _MessagingState;
 }

@@ -30,6 +30,7 @@ class ChatCreationDialog extends StatelessWidget {
         ElevatedButton(
             onPressed: () {
               navigation.pop();
+              chatsCubit.clearChatName();
               chatsCubit.resetChatCreationError();
             },
             child: const Text(ChatTexts.cancelRu)),
@@ -43,6 +44,7 @@ class ChatCreationDialog extends StatelessWidget {
                     adminId: authCubit.user!.id),
                     authCubit.user!);
                 chatsCubit.resetChatCreationError();
+                chatsCubit.clearChatName();
               }
             },
             child: const Text(ChatTexts.createRu))

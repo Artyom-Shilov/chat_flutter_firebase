@@ -1,10 +1,10 @@
-import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chat_search_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/search_state.dart';
 import 'package:chat_flutter_firebase/chats/widgets/chat_search_field.dart';
 import 'package:chat_flutter_firebase/chats/widgets/search_result_list.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
+import 'package:chat_flutter_firebase/common/snackbars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,6 +13,7 @@ class ChatSearchPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final searchCubit = BlocProvider.of<ChatSearchCubit>(context);
     return GestureDetector(
       onTap: () {
         FocusManager.instance.primaryFocus?.unfocus();
@@ -33,11 +34,11 @@ class ChatSearchPage extends StatelessWidget {
           ),
         ),
         body: BlocConsumer<ChatSearchCubit, SearchState>(
+          listenWhen: (prev, next) => prev.status != next.status,
           listener: (context, state) {
             if (state.status == SearchStatus.error) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(state.message),
-              ));
+              SnackBars.showCommonSnackBar(state.message, context);
+              searchCubit.setStateStatus(status: SearchStatus.done);
             }
           },
           buildWhen: (prev, next) => prev.status != next.status,

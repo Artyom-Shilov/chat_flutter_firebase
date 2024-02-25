@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:chat_flutter_firebase/messaging/controllers/video_message_cubit.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/video_message_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,9 +17,14 @@ class VideoMessageCubitImpl extends Cubit<VideoMessageState> implements VideoMes
 
   @override
   Future<void> init() async {
-    await _controller.initialize();
-    await _controller.setLooping(true);
-    emit(state.copyWith(status: VideoMessageStatus.ready));
+    try {
+      await _controller.initialize();
+      await _controller.setLooping(true);
+      emit(state.copyWith(status: VideoMessageStatus.ready));
+
+    } catch (e, printStack) {
+      log(printStack.toString());
+    }
   }
 
   @override
@@ -25,14 +32,22 @@ class VideoMessageCubitImpl extends Cubit<VideoMessageState> implements VideoMes
 
   @override
   Future<void> pause() async {
-    await playerController.pause();
-    emit(state.copyWith(isPlaying: false));
+    try {
+      await playerController.pause();
+      emit(state.copyWith(isPlaying: false));
+    } catch (e, printStack) {
+      log(printStack.toString());
+    }
   }
 
   @override
   Future<void> play() async {
+    try {
     await playerController.play();
     emit(state.copyWith(isPlaying: true));
+    } catch (e, printStack) {
+      log(printStack.toString());
+    }
   }
 
   @override

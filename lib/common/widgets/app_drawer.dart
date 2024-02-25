@@ -1,8 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
-import 'package:chat_flutter_firebase/common/widgets/circle_cashed_network_image.dart';
+import 'package:chat_flutter_firebase/common/widgets/cached_avatar.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,21 +13,18 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authCubit = BlocProvider.of<AuthCubit>(context);
+    final user = BlocProvider.of<AuthCubit>(context).user;
+    final userName = user?.name ?? user?.email ?? user?.id ?? '';
     final navigation = GoRouter.of(context);
-    print(authCubit.user);
     return Drawer(
       child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 50),
         children: [
           Center(
-            child: authCubit.user!.photoUrl != null
-                ? CircleCashedNetworkImage(
-                url: authCubit.user!.photoUrl!,
-                radius: 40)
-                : CircleAvatar(
-              radius: 40,
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.3),)
-          ) ,
+              child: CachedAvatar(
+                  photoUrl: authCubit.user?.photoUrl,
+                  name: userName,
+                  radius: 30)),
           const SizedBox(height: Sizes.verticalInset2),
           Text(
               authCubit.user?.name ??

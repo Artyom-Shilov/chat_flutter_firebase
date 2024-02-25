@@ -17,5 +17,6 @@ abstract interface class NetworkService {
   Future<List<Message>> getChatMessages(ChatInfo chatInfo);
   Future<void> sendMessage(Message message, ChatInfo chatInfo);
   Future<void> updateChat(ChatInfo chatInfo);
-  Future<void> updateUserChat(ChatInfo chatInfo, List<UserInfo> chatUsers);
+  Future<void> updateUserChats(ChatInfo chatInfo, List<UserInfo> chatUsers);
+  Future<void> leaveChat(ChatInfo chatInfo, UserInfo userInfo);
 }

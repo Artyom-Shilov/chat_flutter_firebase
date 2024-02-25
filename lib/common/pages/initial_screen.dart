@@ -1,6 +1,5 @@
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_state.dart';
-import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';

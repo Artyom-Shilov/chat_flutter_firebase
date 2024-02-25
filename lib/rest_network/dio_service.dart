@@ -30,7 +30,6 @@ class DioService implements NetworkService {
   @override
   Future<void> saveUser(UserInfo user) async {
     final json = user.toJson();
-    json.remove('id');
     await _dio.put('/${Location.profiles.name}/${user.id}.json', data: json);
   }
 
@@ -95,9 +94,7 @@ class DioService implements NetworkService {
   @override
   Future<void> saveChat(ChatInfo chatInfo, UserInfo userInfo) async {
     final chatJson = chatInfo.toJson();
-    chatJson.remove('name');
     final userJson = userInfo.toJson();
-    userJson.remove('id');
     await _dio.put('/${Location.chats.name}/${chatInfo.name}.json', data: chatJson);
     await _dio.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
     await _dio.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
@@ -127,9 +124,7 @@ class DioService implements NetworkService {
   @override
   Future<void> joinChat(ChatInfo chatInfo, UserInfo userInfo) async {
     final chatJson = chatInfo.toJson();
-    chatJson.remove('name');
     final userJson = userInfo.toJson();
-    userJson.remove('id');
     await _dio.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
     await _dio.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
   }
@@ -160,19 +155,23 @@ class DioService implements NetworkService {
   @override
   Future<void> updateChat(ChatInfo chatInfo) async {
     final chatJson = chatInfo.toJson();
-    chatJson.remove('name');
     await _dio.put('/${Location.chats.name}/${chatInfo.name}.json', data: chatJson);
   }
 
   @override
-  Future<void> updateUserChat(
+  Future<void> updateUserChats(
       ChatInfo chatInfo, List<UserInfo> chatUsers) async {
     final chatJson = chatInfo.toJson();
-    chatJson.remove('name');
     final Map<String, dynamic> requestBody = {};
     for (final user in chatUsers) {
       requestBody.putIfAbsent('${user.id}/${chatInfo.name}', () => chatJson);
     }
     await _dio.patch('/${Location.userChats.name}.json', data: requestBody);
+  }
+
+  @override
+  Future<void> leaveChat(ChatInfo chatInfo, UserInfo userInfo) async {
+    await _dio.delete('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json');
+    await _dio.delete('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json');
   }
 }
