@@ -8,7 +8,7 @@ abstract interface class ChatsCubit extends Cubit<ChatsState> {
   ChatsCubit(super.initialState);
 
   Future<void> createChat(ChatInfo chatInfo, UserInfo userInfo);
-  Future<void> removeChat(ChatInfo chatInfo);
+  Future<void> leaveChat(ChatInfo chatInfo);
   Future<void> loadChatsByUserId(String userId);
 
   Future<void> validateChatName();

@@ -10,12 +10,12 @@ class ChatInfo with _$ChatInfo {
   const ChatInfo._();
 
   const factory ChatInfo(
-      {
-        required String name,
+      {required String name,
       required String adminId,
       String? photoUrl,
       String? lastUserNameText,
-      String? lastMessageText}) = _ChatInfo;
+      String? lastMessageText,
+      int? lastMessageTime}) = _ChatInfo;
 
   factory ChatInfo.fromJson(Map<String, dynamic> json) =>
       _$ChatInfoFromJson(json);

@@ -22,6 +22,7 @@ abstract class AuthErrorTexts {
   static const String signInByGoogleRu = 'Ошибка в процессе авторизации через Google-аккаунт';
   static const String signOut = 'Ошибка в процессе выхода';
   static const String noConnectionRU = 'Нет подкючения к сети';
+  static const String setAppUser = 'Ошибка входа';
 }
 
 abstract class ChatTexts {
