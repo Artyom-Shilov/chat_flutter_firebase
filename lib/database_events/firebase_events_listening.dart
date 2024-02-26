@@ -41,43 +41,50 @@ class FirebaseEventsListening implements DatabaseEventsListening {
 
   @override
   Stream<Message> addedMessagesStream(ChatInfo chatInfo) {
-    final messagesRef = FirebaseDatabase.instance.ref('${Location.messages.name}/${chatInfo.name}');
+    final messagesRef = FirebaseDatabase.instance
+        .ref('${Location.messages.name}/${chatInfo.name}');
     return messagesRef.onChildAdded.transform(_messageTransformer);
   }
 
   @override
   Stream<Message> updatedMessageStream(ChatInfo chatInfo) {
-    final messagesRef = FirebaseDatabase.instance.ref('${Location.messages.name}/${chatInfo.name}');
+    final messagesRef = FirebaseDatabase.instance
+        .ref('${Location.messages.name}/${chatInfo.name}');
     return messagesRef.onChildChanged.transform(_messageTransformer);
   }
 
   @override
   Stream<ChatInfo> userChatsUpdates() {
-    final messagesRef = FirebaseDatabase.instance.ref('${Location.userChats.name}/$currentUserId');
+    final messagesRef = FirebaseDatabase.instance
+        .ref('${Location.userChats.name}/$currentUserId');
     return messagesRef.onChildChanged.transform(_chatTransformer);
   }
 
   @override
   Stream<ChatInfo> deletedUserChatsStream() {
-    final messagesRef = FirebaseDatabase.instance.ref('${Location.userChats.name}/$currentUserId');
+    final messagesRef = FirebaseDatabase.instance
+        .ref('${Location.userChats.name}/$currentUserId');
     return messagesRef.onChildRemoved.transform(_chatTransformer);
   }
 
   @override
   Stream<ChatInfo> addedUserChatsStream() {
-    final messagesRef = FirebaseDatabase.instance.ref('${Location.userChats.name}/$currentUserId');
+    final messagesRef = FirebaseDatabase.instance
+        .ref('${Location.userChats.name}/$currentUserId');
     return messagesRef.onChildAdded.transform(_chatTransformer);
   }
 
   @override
   Stream<UserInfo> addedChatMemberStream(ChatInfo chatInfo) {
-    final chatMembersRef = FirebaseDatabase.instance.ref('${Location.chatMembers.name}/${chatInfo.name}');
+    final chatMembersRef = FirebaseDatabase.instance
+        .ref('${Location.chatMembers.name}/${chatInfo.name}');
     return chatMembersRef.onChildAdded.transform(_userTransformer);
   }
 
   @override
   Stream<UserInfo> deletedChatMemberStream(ChatInfo chatInfo) {
-    final chatMembersRef = FirebaseDatabase.instance.ref('${Location.chatMembers.name}/${chatInfo.name}');
+    final chatMembersRef = FirebaseDatabase.instance
+        .ref('${Location.chatMembers.name}/${chatInfo.name}');
     return chatMembersRef.onChildRemoved.transform(_userTransformer);
   }
 }

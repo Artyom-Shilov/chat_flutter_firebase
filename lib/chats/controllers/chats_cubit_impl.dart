@@ -175,7 +175,7 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
   }
 
   @override
-  List<ChatInfo> get getUserChats =>
+  List<ChatInfo> get userChats =>
       state.userChats..sort((a, b) => a.name.compareTo(b.name));
 
   @override

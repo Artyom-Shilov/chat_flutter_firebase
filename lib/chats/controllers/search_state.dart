@@ -16,7 +16,6 @@ class SearchState with _$SearchState {
   const factory SearchState({
     required SearchStatus status,
     @Default([]) List<({ChatInfo chat, bool isJoined})> searchResult,
-    String? chatSearchErrorText,
     @Default('') message,
   }) = _SearchState;
 

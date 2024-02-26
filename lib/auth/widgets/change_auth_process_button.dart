@@ -1,4 +1,4 @@
-import 'package:chat_flutter_firebase/auth/controllers/auth_processing_cubit.dart';
+import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
@@ -12,20 +12,22 @@ class ChangeAuthProcessButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final processingCubit = BlocProvider.of<AuthProcessingCubit>(context);
+    final authCubit = BlocProvider.of<AuthCubit>(context);
     final textStyle = Theme.of(context).textTheme.displayMedium!;
     final router = GoRouter.of(context);
-    final isRegistration = processingCubit.state.isRegistration;
     return TextButton(
         child: Text(
-            isRegistration ? AuthText.toLoginRu : AuthText.toRegistrationRu,
+            authCubit.isRegistration()
+                ? AuthText.toLoginRu
+                : AuthText.toRegistrationRu,
             style: textStyle.copyWith(fontSize: 16)),
         onPressed: () {
           formKey.currentState!.reset();
-          processingCubit.clearTextControllers();
-          processingCubit.changeAuthProcess();
-          isRegistration ? router.pop() : router.goNamed(Routes.registration.routeName);
-        }
-    );
+          authCubit.clearTextControllers();
+          authCubit.changeAuthProcess();
+          authCubit.isRegistration()
+              ? router.goNamed(Routes.registration.routeName)
+              : router.pop();
+        });
   }
 }

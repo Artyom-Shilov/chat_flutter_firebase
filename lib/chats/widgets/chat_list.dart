@@ -1,9 +1,9 @@
-import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chats_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chats_state.dart';
 import 'package:chat_flutter_firebase/common/date_formatting.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
 import 'package:chat_flutter_firebase/common/widgets/cached_avatar.dart';
+import 'package:chat_flutter_firebase/common/widgets/loading_animation.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,20 +15,18 @@ class ChatList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chatsCubit = BlocProvider.of<ChatsCubit>(context);
-    final authCubit = BlocProvider.of<AuthCubit>(context);
-    return Padding(
+    return SliverPadding(
       padding: const EdgeInsets.only(top: Sizes.verticalInset1),
-      child: BlocBuilder<ChatsCubit, ChatsState>(
+      sliver: BlocBuilder<ChatsCubit, ChatsState>(
         buildWhen: (prev, next) => prev.userChats != next.userChats,
         builder: (context, state) {
-          return RefreshIndicator(
-            onRefresh: () => chatsCubit.loadChatsByUserId(authCubit.user!.id),
-            child: ListView.separated(
-            itemCount: state.userChats.length,
+          final chats = chatsCubit.userChats;
+          return SliverList.separated(
+            itemCount: chats.length,
             separatorBuilder: (context, index) =>
                 const SizedBox(height: Sizes.verticalInset2),
             itemBuilder: (context, index) {
-              final chat = state.userChats[index];
+              final chat = chats[index];
               final lastUser = chat.lastUserNameText;
               return Padding(
                 padding:
@@ -43,10 +41,12 @@ class ChatList extends StatelessWidget {
                             pathParameters: {Params.chatName.name: chat.name},
                             extra: chat);
                       },
-                      leading: CachedAvatar(
-                          photoUrl: chat.photoUrl,
-                          name: chat.name,
-                          radius: 30),
+                        leading: CachedAvatar(
+                            photoUrl: chat.photoUrl,
+                            name: chat.name,
+                            placeholderWidget: LoadingAnimation(
+                                color: Theme.of(context).primaryColor),
+                            radius: 30),
                         title: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -83,7 +83,6 @@ class ChatList extends StatelessWidget {
                   ),
                 );
               },
-            ),
           );
         },
       ),

@@ -12,22 +12,18 @@ class ChatSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final authCubit = BlocProvider.of<AuthCubit>(context);
     final searchCubit = BlocProvider.of<ChatSearchCubit>(context);
-    return BlocBuilder<ChatSearchCubit, SearchState>(
-      buildWhen: (prev, next) =>
-          prev.chatSearchErrorText != next.chatSearchErrorText,
-      builder: (context, state) => TextField(
-        controller: searchCubit.chatSearchController,
-          decoration: InputDecoration(
-              hintText: ChatTexts.chatSearchHintRu,
-              errorText: state.chatSearchErrorText),
-        onSubmitted: (_) async {
-          await searchCubit.validateChatSearch();
-          if (searchCubit.state.chatSearchErrorText == null) {
-            searchCubit.resetChatSearchError();
-            searchCubit.searchChatsByName(authCubit.user!);
-          }
-        },
-      ),
+    return TextField(
+      controller: searchCubit.chatSearchController,
+        keyboardType: TextInputType.text,
+        decoration: const InputDecoration(
+            border: InputBorder.none,
+            hintText: ChatTexts.chatSearchHintRu),
+      onSubmitted: (_) async {
+        await searchCubit.validateChatSearch();
+        if (searchCubit.state.status != SearchStatus.error) {
+          searchCubit.searchChatsByName(authCubit.user!);
+        }
+      },
     );
   }
 }

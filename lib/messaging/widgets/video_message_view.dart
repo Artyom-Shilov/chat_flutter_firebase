@@ -1,4 +1,6 @@
 import 'package:chat_flutter_firebase/app_models/message.dart';
+import 'package:chat_flutter_firebase/common/sizes.dart';
+import 'package:chat_flutter_firebase/common/widgets/loading_animation.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/video_message_cubit.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/video_message_cubit_impl.dart';
 import 'package:chat_flutter_firebase/messaging/widgets/video_item.dart';
@@ -17,9 +19,11 @@ class VideoMessageView extends StatelessWidget {
             create: (context) =>
                 VideoMessageCubitImpl(videoUrl: message.fileRef!),
             child: const VideoItem())
-        : const Padding(
-          padding: EdgeInsets.all(20),
-          child: Center(child: Icon(Icons.downloading)),
-        );
+        : Padding(
+          padding: const EdgeInsets.all(Sizes.verticalInset1),
+            child: Center(
+                child: LoadingAnimation(
+                    color: Theme.of(context).primaryColor)),
+          );
   }
 }

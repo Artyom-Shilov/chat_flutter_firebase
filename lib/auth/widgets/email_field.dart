@@ -1,4 +1,4 @@
-import 'package:chat_flutter_firebase/auth/controllers/auth_processing_cubit.dart';
+import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/auth/widgets/input_field.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:flutter/material.dart';
@@ -11,13 +11,13 @@ class EmailField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final processingCubit = BlocProvider.of<AuthProcessingCubit>(context);
+    final authCubit = BlocProvider.of<AuthCubit>(context);
     return InputField(
         hintText: AuthText.emailHintRu,
         prefixIcon: const Icon(
           Icons.email,
           color: Colors.grey),
-        textController: processingCubit.emailController,
-        validator: processingCubit.emailValidation);
+        textController: authCubit.emailController,
+        validator: authCubit.emailValidation);
   }
 }

@@ -15,8 +15,8 @@ class AnimatedSendButton extends HookWidget {
     final animationController =
         useAnimationController(duration: const Duration(milliseconds: 500));
     final curved = CurvedAnimation(parent: animationController, curve: Curves.easeInQuart);
-    final widthTween =
-        Tween<double>(begin: 0, end: 20).animate(curved);
+    final offsetTween =
+        Tween<Offset>(begin: Offset.zero, end: Offset(20, 0)).animate(curved);
     return BlocListener<MessagingCubit, MessagingState>(
       listenWhen: (prev, next) =>
           prev.isTextFieldEmpty != next.isTextFieldEmpty,
@@ -28,14 +28,14 @@ class AnimatedSendButton extends HookWidget {
       child: AnimatedBuilder(
         animation: animationController,
         builder: (context, _) {
-          return Padding(
-            padding: EdgeInsets.only(left: widthTween.value),
+          return Transform.translate(
+            offset: offsetTween.value,
             child: Opacity(
                 opacity: animationController.value,
                 child: IconButton(
+                  padding: EdgeInsets.zero,
                   icon: const Icon(Icons.send),
                   onPressed: () async {
-                    FocusManager.instance.primaryFocus?.unfocus();
                     if (!messagingCubit.state.isTextFieldEmpty) {
                       await messagingCubit.sendTextMessage(authCubit.user!);
                       messagingCubit.clearInput();

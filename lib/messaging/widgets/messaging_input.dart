@@ -1,4 +1,5 @@
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
+import 'package:chat_flutter_firebase/common/app_colors.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/messaging_cubit.dart';
@@ -16,7 +17,7 @@ class MessagingInput extends StatelessWidget {
     final messagingCubit = BlocProvider.of<MessagingCubit>(context);
     final authCubit = BlocProvider.of<AuthCubit>(context);
     return Container(
-      color: Theme.of(context).primaryColor.withOpacity(0.2),
+      color: AppColors.appBar,
       child: Row(children: [
         Expanded(
           child: FractionallySizedBox(
@@ -37,7 +38,7 @@ class MessagingInput extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 30, child: AnimatedSendButton()),
+        const AnimatedSendButton(),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: IconButton(
@@ -63,11 +64,11 @@ class MessagingInput extends StatelessWidget {
                               text: MessagingTexts.addPhotoFromGalleryRu,
                               icon: const Icon(Icons.photo),
                               onTap: () async {
-                               /* FocusManager.instance.primaryFocus?.unfocus();
+                                FocusManager.instance.primaryFocus?.unfocus();
                                 GoRouter.of(context).pop();
                                 messagingCubit.clearInput();
                                 await messagingCubit
-                                    .sendImageFromGallery(authCubit.user!);*/
+                                    .sendImageFromGallery(authCubit.user!);
                               },
                             ),
                             BottomSheetItem(
