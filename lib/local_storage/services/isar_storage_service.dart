@@ -24,11 +24,11 @@ class IsarStorageService implements LocalStorageService {
 
   @override
   Future<LocalUserInfo?> getSavedAppUser() async {
-    List<LocalUserInfo> localInfo = [];
+    LocalUserInfo? user;
     await _isar.txn(() async {
-      localInfo = await _isar.localUserInfos.where().findAll();
+      user = await _isar.localUserInfos.where().findFirst();
     });
-    return localInfo.isEmpty ? null : localInfo.first;
+    return user;
   }
 
   @override

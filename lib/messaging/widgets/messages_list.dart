@@ -21,24 +21,21 @@ class MessagesList extends StatelessWidget {
           prev.messages != next.messages || prev.members != next.members,
         builder: (context, state) {
           final messages = messagingCubit.messages;
-          return RefreshIndicator(
-            onRefresh: () => messagingCubit.init(),
-            child: ListView.separated(
-                reverse: true,
-                controller: messagingCubit.messageListController,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 40),
-                itemCount: messages.length,
-                itemBuilder: (context, index) {
-                  final message = messages[index];
-                  final senderInfo = messagingCubit.state.members.
-                      firstWhereOrNull((element) => element.id == message.senderId);
-                  return ChatMessage(
-                      message: message,
-                      senderInfo: senderInfo,
-                      isAnotherMember: senderInfo?.id != authCubit.user!.id);
-                }),
-          );
+          return ListView.separated(
+              reverse: true,
+              controller: messagingCubit.messageListController,
+              separatorBuilder: (context, index) =>
+                  const SizedBox(height: 40),
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                final message = messages[index];
+                final senderInfo = messagingCubit.state.members.
+                    firstWhereOrNull((element) => element.id == message.senderId);
+                return ChatMessage(
+                    message: message,
+                    senderInfo: senderInfo,
+                    isAnotherMember: senderInfo?.id != authCubit.user!.id);
+              });
         },
       ),
     );

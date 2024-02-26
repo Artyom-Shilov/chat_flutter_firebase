@@ -1,4 +1,4 @@
-
+import 'package:chat_flutter_firebase/common/app_colors.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
 import 'package:chat_flutter_firebase/common/snackbars.dart';
 import 'package:chat_flutter_firebase/common/widgets/cached_avatar.dart';
@@ -30,7 +30,7 @@ class ChatMessagingPage extends HookWidget {
       child: Scaffold(
         resizeToAvoidBottomInset: orientation == Orientation.portrait ? true : false,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+          backgroundColor: AppColors.appBar,
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(
                   bottom: Radius.circular(Sizes.borderRadius1))),
@@ -42,8 +42,14 @@ class ChatMessagingPage extends HookWidget {
               Text(messagingCubit.state.chat.name),
             ],
           ),
-          actions: const [
-            ChatPopUpMenu()
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                messagingCubit.init();
+              },
+            ),
+            const ChatPopUpMenu()
           ],
         ),
         body: BlocConsumer<MessagingCubit, MessagingState>(

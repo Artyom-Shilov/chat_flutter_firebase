@@ -1,3 +1,5 @@
+import 'package:chat_flutter_firebase/common/sizes.dart';
+import 'package:chat_flutter_firebase/common/widgets/loading_animation.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/video_message_cubit.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/video_message_state.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +21,10 @@ class VideoItem extends HookWidget {
     return BlocBuilder<VideoMessageCubit, VideoMessageState>(
         builder: (context, state) {
       return state.status == VideoMessageStatus.loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Padding(
+            padding: const EdgeInsets.all(Sizes.verticalInset1),
+            child: Center(child: LoadingAnimation(color: Theme.of(context).primaryColor)),
+          )
           : Stack(
               alignment: AlignmentDirectional.center,
               children: [

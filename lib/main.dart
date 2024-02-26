@@ -1,7 +1,5 @@
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit_impl.dart';
-import 'package:chat_flutter_firebase/auth/controllers/auth_processing_cubit.dart';
-import 'package:chat_flutter_firebase/auth/controllers/auth_processing_cubit_impl.dart';
 import 'package:chat_flutter_firebase/auth/services/firebase_auth_service.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chat_search_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chat_search_cubit_impl.dart';
@@ -50,7 +48,6 @@ class MyApp extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final navigation = useState(AppNavigation()).value;
     return MultiBlocProvider(
       providers: [
           BlocProvider<AuthCubit>(
@@ -60,8 +57,6 @@ class MyApp extends HookWidget {
                   localStorageService: GetIt.I.get<LocalStorageService>(),
                   networkConnectivity: GetIt.I.get<NetworkConnectivity>()
               )),
-          BlocProvider<AuthProcessingCubit>(
-              create: (context) => AuthProcessingCubitImpl()),
           BlocProvider<ChatsCubit>(
               create: (context) => ChatsCubitImpl(
                   networkService: GetIt.I.get<NetworkService>(),
@@ -76,7 +71,7 @@ class MyApp extends HookWidget {
                 eventsListening: GetIt.I.get<DatabaseEventsListening>()))
         ],
         child: MaterialApp.router(
-        routerConfig: navigation.goRouter,
+        routerConfig: AppNavigation.goRouter,
         title: 'Chat app',
         theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),

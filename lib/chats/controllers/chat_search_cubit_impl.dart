@@ -70,10 +70,6 @@ class ChatSearchCubitImpl extends Cubit<SearchState>
   @override
   TextEditingController chatSearchController = TextEditingController();
 
-  @override
-  void resetChatSearchError() {
-    emit(state.copyWith(chatSearchErrorText: null));
-  }
 
   @override
   void clearSearchValue() {
@@ -82,17 +78,12 @@ class ChatSearchCubitImpl extends Cubit<SearchState>
 
   @override
   Future<void> validateChatSearch() async {
-    final searchValue = chatSearchController.text;
     if (!await _networkConnectivity.checkNetworkConnection()) {
-      emit(state.copyWith(chatSearchErrorText: ChatErrorsTexts.noConnectionRU));
-      return;
-    }
-    if (searchValue.isEmpty) {
       emit(state.copyWith(
-          chatSearchErrorText: ChatTexts.chatSearchLengthFieldErrorRu));
+          status: SearchStatus.error,
+          message: ChatErrorsTexts.noConnectionRU));
       return;
     }
-    emit(state.copyWith(chatSearchErrorText: null));
   }
 
   @override
@@ -110,7 +101,13 @@ class ChatSearchCubitImpl extends Cubit<SearchState>
             message: ChatErrorsTexts.noConnectionRU));
         return;
       }
-      final foundChats = await _networkService.searchForChats(chatSearchController.text);
+      if (chatSearchController.text.trim().isEmpty) {
+        emit(state.copyWith(
+            status: SearchStatus.done, searchResult: []));
+        return;
+      }
+      final foundChats = await _networkService
+          .searchForChats(chatSearchController.text.trim());
       final userChatNames =
           ((await _networkService.getChatsByUser(userInfo.id)))
               .map((e) => e.name)

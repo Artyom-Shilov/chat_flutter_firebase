@@ -1,5 +1,5 @@
-import 'package:chat_flutter_firebase/auth/controllers/auth_processing_cubit.dart';
-import 'package:chat_flutter_firebase/auth/controllers/auth_processing_state.dart';
+import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
+import 'package:chat_flutter_firebase/auth/controllers/auth_state.dart';
 import 'package:chat_flutter_firebase/auth/widgets/input_field.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:flutter/material.dart';
@@ -10,9 +10,8 @@ class PasswordField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final processingCubit = BlocProvider.of<AuthProcessingCubit>(context);
-    //TODO May be animate password visibility switch
-    return BlocBuilder<AuthProcessingCubit, AuthProcessingState>(
+    final authCubit = BlocProvider.of<AuthCubit>(context);
+    return BlocBuilder<AuthCubit, AuthState>(
       buildWhen: (prev, next) =>
           prev.isPasswordInputVisible != next.isPasswordInputVisible,
       builder: (context, state) => InputField(
@@ -22,7 +21,7 @@ class PasswordField extends StatelessWidget {
             color: Colors.grey),
           obscureText: !state.isPasswordInputVisible,
           suffixIcon: GestureDetector(
-            onTap: () => processingCubit.changePasswordInputVisibility(),
+            onTap: () => authCubit.changePasswordInputVisibility(),
             child: Icon(
               state.isPasswordInputVisible
                   ? Icons.visibility
@@ -30,8 +29,8 @@ class PasswordField extends StatelessWidget {
               color: Colors.grey,
             ),
           ),
-          textController: processingCubit.passwordController,
-          validator: processingCubit.passwordValidation),
+          textController: authCubit.passwordController,
+          validator: authCubit.passwordValidation),
     );
   }
 }

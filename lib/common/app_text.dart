@@ -22,7 +22,10 @@ abstract class AuthErrorTexts {
   static const String signInByGoogleRu = 'Ошибка в процессе авторизации через Google-аккаунт';
   static const String signOut = 'Ошибка в процессе выхода';
   static const String noConnectionRU = 'Нет подкючения к сети';
-  static const String setAppUser = 'Ошибка входа';
+  static const String setAppUserRu = 'Ошибка входа';
+  static const String wrongPasswordRu = 'Неверный пароль';
+  static const String emailAlreadyInUse = 'Пользователь с таким email уже существует';
+  static const String commonAuthErrorRu = 'Ошибка авторизации';
 }
 
 abstract class ChatTexts {
@@ -37,7 +40,7 @@ abstract class ChatTexts {
   static const String chatAlreadyExistsFieldErrorRu = 'Чат уже существет';
   static const String chatNameLengthFieldErrorRu = 'Минимальная длинна - один символ';
 
-  static const String chatSearchHintRu = 'Введите запрос для поиска';
+  static const String chatSearchHintRu = 'Поиск чата';
   static const String chatSearchLengthFieldErrorRu = 'Минимальная длинна - один символ';
   static const String noChatsFoundRu = 'К сожалению, чатов по запросу не найдено';
   static const String initSearchMessageRu = 'Пожалуйста, введите значение для поиска';

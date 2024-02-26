@@ -11,6 +11,7 @@ import 'package:chat_flutter_firebase/local_storage/local_models/local_user_info
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
@@ -20,26 +21,22 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
     required NetworkService networkService,
     required LocalStorageService localStorageService,
     required NetworkConnectivity networkConnectivity,
-  })
-      : _auth = authService,
+  })  : _auth = authService,
         _networkService = networkService,
         _localStorage = localStorageService,
         _networkConnectivity = networkConnectivity,
-        super(const AuthState(status: AuthStatus.signedOut))
-  {
-    userSubscription = _auth.authStateChanges().listen((firebaseAuthUser) async {
-     // log('auth state subscription user: ${firebaseAuthUser.toString()}');
+        super(const AuthState(status: AuthStatus.signedOut)) {
+    userSubscription =
+        _auth.authStateChanges().listen((firebaseAuthUser) async {
       if (firebaseAuthUser == null) {
-       emit(state.copyWith(status: AuthStatus.signedOut, user: null, firebaseUser: null));
+        emit(state.copyWith(
+            status: AuthStatus.signedOut, user: null, firebaseUser: null));
       } else {
         emit(state.copyWith(firebaseUser: firebaseAuthUser));
         !_receivedFirebaseUserCompleter.isCompleted
             ? _receivedFirebaseUserCompleter.complete()
             : null;
       }
-    });
-    stream.listen((event) {
-      log('event: ${event.user?.name}');
     });
   }
 
@@ -57,7 +54,6 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       if (!await _checkNetworkConnection()) {
         return;
       }
-      emit(state.copyWith(status: AuthStatus.loading));
       await _auth.createUserByEmailAndPassword(email, password);
       await _receivedFirebaseUserCompleter.future;
       _addUserToDatabaseIfAbsent();
@@ -65,7 +61,11 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
           app_models.UserInfo.fromFirebaseAuthUser(state.firebaseUser!)
               .copyWith(name: username);
       emit(state.copyWith(user: appUser, status: AuthStatus.signedIn));
-    } catch (e, stackTrace) {
+    }
+    on FirebaseAuthException catch (e, stackTrace){
+      _handleFirebaseException(e, stackTrace);
+    }
+    catch (e, stackTrace) {
       log(stackTrace.toString());
       emit(state.copyWith(
           status: AuthStatus.error,
@@ -90,7 +90,11 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       emit(state.copyWith(
           user: actualUserInfo,
           status: AuthStatus.signedIn));
-    } catch (e, stackTrace) {
+    }
+    on FirebaseAuthException catch (e, stackTrace){
+      _handleFirebaseException(e, stackTrace);
+    }
+    catch (e, stackTrace) {
       log(stackTrace.toString());
       emit(state.copyWith(
           status: AuthStatus.error,
@@ -175,21 +179,107 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
               (await _localStorage.getSavedAppUser())!)));
     } catch (e, stackTrace) {
       log(stackTrace.toString());
-      emit(state.copyWith(status: AuthStatus.error, message: AuthErrorTexts.setAppUser));
+      emit(state.copyWith(status: AuthStatus.error, message: AuthErrorTexts.setAppUserRu));
     }finally {
       _receivedFirebaseUserCompleter = Completer.sync();
     }
   }
 
+  _handleFirebaseException(FirebaseAuthException e, StackTrace stacktrace) {
+    log(stacktrace.toString());
+    if (e.code == 'invalid-credential') {
+      emit(state.copyWith(
+          status: AuthStatus.error,
+          message: AuthErrorTexts.wrongPasswordRu));
+    } else if(e.code == 'email-already-in-use') {
+      emit(state.copyWith(
+          status: AuthStatus.error,
+          message: AuthErrorTexts.emailAlreadyInUse));
+    }
+      else {
+      emit(state.copyWith(
+          status: AuthStatus.error,
+          message: AuthErrorTexts.commonAuthErrorRu));
+    }
+  }
+
   @override
-  void resetState() {
+  Future<void> resetState({Duration? delay}) async{
+    delay != null ? await Future.delayed(delay) : null;
     emit(state.copyWith(status: AuthStatus.signedOut, message: '', user: null));
+  }
+
+  @override
+  void changePasswordInputVisibility() {
+    emit(state.copyWith(isPasswordInputVisible: !state.isPasswordInputVisible));
+  }
+
+  @override
+  final TextEditingController emailController = TextEditingController();
+
+  @override
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  final TextEditingController usernameController = TextEditingController();
+
+  @override
+  void clearTextControllers() {
+    emailController.clear();
+    passwordController.clear();
+    usernameController.clear();
+  }
+
+  @override
+  String? Function(String? login) emailValidation = (value) {
+    const emailPattern = r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'"
+        r'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-'
+        r'\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*'
+        r'[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4]'
+        r'[0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9]'
+        r'[0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\'
+        r'x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])';
+    final regex = RegExp(emailPattern);
+    if (value == null || value.isEmpty || !regex.hasMatch(value)) {
+      return AuthText.emailValidationErrorRu;
+    }
+    return null;
+  };
+
+  @override
+  String? Function(String? password) passwordValidation = (value) {
+    if (value == null || value.isEmpty || value.length < 6) {
+      return AuthText.passwordValidationLengthErrorRu;
+    }
+    return null;
+  };
+
+  @override
+  String? Function(String? repeatedPassword) get userNameValidation => (value) {
+    if (value == null || value.isEmpty || value.length > 40) {
+      return AuthText.usernameValidationLengthErrorRu;
+    }
+    return null;
+  };
+
+
+  @override
+  void changeAuthProcess() {
+    emit(state.copyWith(isRegistration: !state.isRegistration));
   }
 
   @override
   Future<void> close() async {
     await userSubscription?.cancel();
     _receivedFirebaseUserCompleter.complete();
+    passwordController.dispose();
+    emailController.dispose();
+    usernameController.dispose();
     await super.close();
+  }
+
+  @override
+  bool isRegistration() {
+    return state.isRegistration;
   }
 }

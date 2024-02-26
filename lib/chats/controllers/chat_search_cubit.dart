@@ -12,7 +12,6 @@ abstract interface class ChatSearchCubit extends Cubit<SearchState> {
 
   Future<void> validateChatSearch();
   TextEditingController get chatSearchController;
-  void resetChatSearchError();
   void clearSearchValue();
   void resetSearchResult();
 

@@ -1,4 +1,4 @@
-import 'package:chat_flutter_firebase/auth/controllers/auth_processing_cubit.dart';
+import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/auth/widgets/input_field.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:flutter/material.dart';
@@ -9,14 +9,14 @@ class NameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final processingCubit = BlocProvider.of<AuthProcessingCubit>(context);
+    final authCubit = BlocProvider.of<AuthCubit>(context);
     return InputField(
         hintText: AuthText.usernameHintRu,
         prefixIcon: const Icon(
           Icons.person,
           color: Colors.grey,
         ),
-        textController: processingCubit.usernameController,
-        validator: processingCubit.userNameValidation);
+        textController: authCubit.usernameController,
+        validator: authCubit.userNameValidation);
   }
 }

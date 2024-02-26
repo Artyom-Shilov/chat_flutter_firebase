@@ -19,55 +19,45 @@ import 'package:go_router/go_router.dart';
 
 class AppNavigation {
 
-  late bool isUserWasSignIn;
-
-  GoRouter goRouter = GoRouter(
-          debugLogDiagnostics: true,
-          initialLocation: '/',
-          routes: [
-            GoRoute(
-              path: '/',
-              builder: (context, state) => const InitialScreen()
-            ),
-            GoRoute(
-                path: '/${Routes.signIn.routeName}',
-                name: Routes.signIn.routeName,
-                builder: (context, state) => const AuthPage(),
-                routes: [
-                  GoRoute(
-                      path: Routes.registration.routeName,
-                      name: Routes.registration.routeName,
-                      pageBuilder: (context, state) => CustomTransitionPage(
-                          key: state.pageKey,
-                          child: const AuthPage(),
-                          transitionsBuilder: (context, animation, _, child) =>
-                              SlideTransition(
-                                  position: animation.drive(Tween<Offset>(
-                                      begin: const Offset(1, 0),
-                                      end: Offset.zero)),
-                                  child: child)))
-                ]),
-            GoRoute(
-                path: '/${Routes.chats.routeName}',
-                name: Routes.chats.routeName,
-                builder: (context, state) => const ChatListPage(),
-                routes: [
-                  GoRoute(
-                      path: Routes.search.routeName,
-                      name: Routes.search.routeName,
-                      pageBuilder: (context, state) => CustomTransitionPage(
-                          key: state.pageKey,
-                          child: const ChatSearchPage(),
-                          transitionsBuilder: (context, animation, _, child) =>
-                              SlideTransition(
-                                  position: animation.drive(Tween<Offset>(
-                                      begin: const Offset(1, 0),
-                                      end: Offset.zero)),
-                                  child: child))
-                  ),
-                  GoRoute(
-                      path: '${Routes.messaging.routeName}/:${Params.chatName.name}',
-                      name: Routes.messaging.routeName,
+  static GoRouter goRouter =
+      GoRouter(debugLogDiagnostics: true, initialLocation: '/', routes: [
+    GoRoute(path: '/', builder: (context, state) => const InitialScreen()),
+    GoRoute(
+        path: '/${Routes.signIn.routeName}',
+        name: Routes.signIn.routeName,
+        builder: (context, state) => const AuthPage(),
+        routes: [
+          GoRoute(
+              path: Routes.registration.routeName,
+              name: Routes.registration.routeName,
+              pageBuilder: (context, state) => CustomTransitionPage(
+                  key: state.pageKey,
+                  child: const AuthPage(),
+                  transitionsBuilder: (context, animation, _, child) =>
+                      SlideTransition(
+                          position: animation.drive(Tween<Offset>(
+                              begin: const Offset(1, 0), end: Offset.zero)),
+                          child: child)))
+        ]),
+    GoRoute(
+        path: '/${Routes.chats.routeName}',
+        name: Routes.chats.routeName,
+        builder: (context, state) => const ChatListPage(),
+        routes: [
+          GoRoute(
+              path: Routes.search.routeName,
+              name: Routes.search.routeName,
+              pageBuilder: (context, state) => CustomTransitionPage(
+                  key: state.pageKey,
+                  child: const ChatSearchPage(),
+                  transitionsBuilder: (context, animation, _, child) =>
+                      SlideTransition(
+                          position: animation.drive(Tween<Offset>(
+                              begin: const Offset(1, 0), end: Offset.zero)),
+                          child: child))),
+          GoRoute(
+              path: '${Routes.messaging.routeName}/:${Params.chatName.name}',
+              name: Routes.messaging.routeName,
               builder: (context, state) => BlocProvider<MessagingCubit>(
                   create: (context) => MessagingCubitImpl(
                       chat: state.extra as ChatInfo,

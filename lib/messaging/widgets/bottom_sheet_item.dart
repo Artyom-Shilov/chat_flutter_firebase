@@ -18,7 +18,7 @@ class BottomSheetItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: const EdgeInsets.only(left: 30),
-      shape: isBottomLined ? Border(bottom: BorderSide()) : null,
+      shape: isBottomLined ? const Border(bottom: BorderSide()) : null,
       onTap: onTap,
       leading: icon,
       title: Text(text),

@@ -18,6 +18,7 @@ class AuthState with _$AuthState {
     UserInfo? user,
     firebase.User? firebaseUser,
     @Default('') String message,
-  }) = _AuthState;
+    @Default(false) bool isPasswordInputVisible,
+    @Default(false) bool isRegistration}) = _AuthState;
 }
 

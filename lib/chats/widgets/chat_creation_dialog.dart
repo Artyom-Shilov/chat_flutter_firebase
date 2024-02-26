@@ -40,7 +40,7 @@ class ChatCreationDialog extends StatelessWidget {
               if (chatsCubit.state.chatCreationErrorText == null) {
                 navigation.pop();
                 chatsCubit.createChat(ChatInfo(
-                    name: chatsCubit.chatCreationController.text,
+                    name: chatsCubit.chatCreationController.text.trim(),
                     adminId: authCubit.user!.id),
                     authCubit.user!);
                 chatsCubit.resetChatCreationError();
