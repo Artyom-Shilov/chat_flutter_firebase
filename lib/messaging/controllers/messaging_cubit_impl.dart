@@ -45,6 +45,7 @@ class MessagingCubitImpl extends Cubit<MessagingState>
             .addedMessagesStream(state.chat)
             .skip(_messageNumberAfterLoad)
             .listen((event) {
+
           emit(state.copyWith(messages: List.of(state.messages)..add(event)));
         });
       }
@@ -231,14 +232,13 @@ class MessagingCubitImpl extends Cubit<MessagingState>
           lastMessageText: lastMessageText,
           lastMessageTime: message.millisSinceEpoch,
           sender: sender);
-
       messageListController.animateTo(
         0,
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeInOut,
       );
-
-      _localStorageService.addChatMessage(LocalMessage.fromMessageAndChatInfo(message, state.chat));
+      _localStorageService.addChatMessage(
+          LocalMessage.fromMessageAndChatInfo(message, state.chat));
       if (type == MessageType.text || file == null) {
         return;
       }

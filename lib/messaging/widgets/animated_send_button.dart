@@ -16,7 +16,7 @@ class AnimatedSendButton extends HookWidget {
         useAnimationController(duration: const Duration(milliseconds: 500));
     final curved = CurvedAnimation(parent: animationController, curve: Curves.easeInQuart);
     final offsetTween =
-        Tween<Offset>(begin: Offset.zero, end: Offset(20, 0)).animate(curved);
+        Tween<Offset>(begin: Offset.zero, end: const Offset(20, 0)).animate(curved);
     return BlocListener<MessagingCubit, MessagingState>(
       listenWhen: (prev, next) =>
           prev.isTextFieldEmpty != next.isTextFieldEmpty,

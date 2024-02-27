@@ -30,9 +30,7 @@ import 'package:get_it/get_it.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  final storage = IsarStorageService();
-  await storage.init();
-  GetIt.I.registerSingleton<LocalStorageService>(storage);
+  GetIt.I.registerSingleton<LocalStorageService>(IsarStorageService());
   GetIt.I.registerSingleton<NetworkService>(DioService());
   GetIt.I.registerSingleton<NetworkConnectivity>(NetworkConnectivityImpl());
   GetIt.I.registerSingleton<DatabaseEventsListening>(FirebaseEventsListening());

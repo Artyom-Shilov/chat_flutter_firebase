@@ -4,20 +4,30 @@ import 'package:chat_flutter_firebase/messaging/controllers/video_message_cubit.
 import 'package:chat_flutter_firebase/messaging/controllers/video_message_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:video_player/video_player.dart';
 
-class VideoItem extends HookWidget {
+class VideoItem extends StatefulWidget {
   const VideoItem({Key? key}) : super(key: key);
 
   @override
+  State<VideoItem> createState() => _VideoItemState();
+}
+
+class _VideoItemState extends State<VideoItem> with AutomaticKeepAliveClientMixin {
+
+  late VideoMessageCubit videoMessageCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    videoMessageCubit = BlocProvider.of<VideoMessageCubit>(context);
+    videoMessageCubit.init();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final cubit = BlocProvider.of<VideoMessageCubit>(context);
-    final controller = cubit.playerController;
-    useEffect(() {
-      cubit.init();
-      return null;
-    });
+    super.build(context);
+    final controller = videoMessageCubit.playerController;
     return BlocBuilder<VideoMessageCubit, VideoMessageState>(
         builder: (context, state) {
       return state.status == VideoMessageStatus.loading
@@ -34,7 +44,7 @@ class VideoItem extends HookWidget {
                 IconButton(
                   color: Colors.white60,
                   onPressed: () async {
-                    state.isPlaying ? await cubit.pause() : await cubit.play();
+                    state.isPlaying ? await videoMessageCubit.pause() : await videoMessageCubit.play();
                   },
                   icon: state.isPlaying
                       ? const Icon(Icons.pause, size: 30)
@@ -44,4 +54,7 @@ class VideoItem extends HookWidget {
             );
     });
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
