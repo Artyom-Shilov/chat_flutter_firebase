@@ -42,7 +42,7 @@ class AuthPage extends HookWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Spacer(flex: 20),
+                  SizedBox(height: MediaQuery.sizeOf(context).height * 0.15),
                   Image.asset('assets/logo.png', width: 100, height: 100),
                   const Spacer(flex: 20),
                   FractionallySizedBox(

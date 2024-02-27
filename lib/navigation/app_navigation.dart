@@ -21,11 +21,20 @@ class AppNavigation {
 
   static GoRouter goRouter =
       GoRouter(debugLogDiagnostics: true, initialLocation: '/', routes: [
-    GoRoute(path: '/', builder: (context, state) => const InitialScreen()),
+    GoRoute(path: '/',
+       builder: (context, state) => const InitialScreen(),
+    ),
     GoRoute(
         path: '/${Routes.signIn.routeName}',
         name: Routes.signIn.routeName,
-        builder: (context, state) => const AuthPage(),
+        pageBuilder: (context, state) => CustomTransitionPage(
+            transitionDuration: const Duration(seconds: 1),
+            key: state.pageKey,
+            child: const AuthPage(),
+            transitionsBuilder: (context, animation, _, child) =>
+                FadeTransition(
+                    opacity: animation,
+                    child: child)),
         routes: [
           GoRoute(
               path: Routes.registration.routeName,
@@ -42,7 +51,14 @@ class AppNavigation {
     GoRoute(
         path: '/${Routes.chats.routeName}',
         name: Routes.chats.routeName,
-        builder: (context, state) => const ChatListPage(),
+        pageBuilder: (context, state) => CustomTransitionPage(
+            transitionDuration: const Duration(seconds: 1),
+            key: state.pageKey,
+            child: const ChatListPage(),
+            transitionsBuilder: (context, animation, _, child) =>
+                FadeTransition(
+                    opacity: animation,
+                    child: child)),
         routes: [
           GoRoute(
               path: Routes.search.routeName,

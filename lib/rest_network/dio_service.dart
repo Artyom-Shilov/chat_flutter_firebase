@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:isolate';
 
 import 'package:chat_flutter_firebase/app_models/chat_info.dart';
 import 'package:chat_flutter_firebase/app_models/message.dart';
 import 'package:chat_flutter_firebase/app_models/user_info.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 enum Location {
   profiles,
@@ -35,39 +38,59 @@ class DioService implements NetworkService {
 
   @override
   Future<List<UserInfo>> getChatMembers(ChatInfo chatInfo) async {
-    final response = await _dio.get<Map<String, dynamic>>(
+    final response = await _dio.get<String>(
         '/${Location.chatMembers.name}/.json',
         queryParameters: {
           'orderBy': r'"$key"',
           'equalTo': '"${chatInfo.name}"'
         });
-    final output = <UserInfo>[];
-    if (response.data!.isEmpty) {
-      return output;
+    if (response.data == null) {
+      return [];
     }
-    final users = response.data![chatInfo.name] as Map<String, dynamic>;
-    for (final key in users.keys) {
-      output.add(UserInfo.fromJson(
-          (users[key] as Map<String, dynamic>)..putIfAbsent('id', () => key)));
-    }
-    return output;
+    final data = TransferableTypedData.fromList(
+        [Int32List.fromList(response.data!.codeUnits)]);
+    final result = await compute<TransferableTypedData, List<UserInfo>>((message) {
+      final decodedResponse = json.decode(
+          String.fromCharCodes(message.materialize().asUint32List())) as Map<String, dynamic>;
+      List<UserInfo> memberList = [];
+      if (decodedResponse.isEmpty) {
+        return memberList;
+      }
+      final users = decodedResponse[chatInfo.name] as Map<String, dynamic>;
+      for (final key in users.keys) {
+        memberList.add(UserInfo.fromJson((users[key] as Map<String, dynamic>)
+          ..putIfAbsent('id', () => key)));
+      }
+      return memberList;
+    }, data);
+    return result;
   }
 
   @override
   Future<List<ChatInfo>> getChatsByUser(String userId) async {
-    final response = await _dio.get<Map<String, dynamic>>(
+    final response = await _dio.get<String>(
         '/${Location.userChats.name}/.json',
         queryParameters: {'orderBy': r'"$key"', 'equalTo': '"$userId"'});
-    final output = <ChatInfo>[];
-    if (response.data!.isEmpty) {
-      return output;
+    if (response.data == null) {
+      return [];
     }
-    final chats = response.data![userId] as Map<String, dynamic>;
-    for (final key in chats.keys) {
-      output.add(ChatInfo.fromJson((chats[key] as Map<String, dynamic>)
-        ..putIfAbsent('name', () => key)));
-    }
-    return output;
+    final data = TransferableTypedData.fromList(
+        [Int32List.fromList(response.data!.codeUnits)]);
+    final result = await compute<TransferableTypedData, List<ChatInfo>>((message) {
+      final decodedResponse = json.decode(
+          String.fromCharCodes(message.materialize().asUint32List())) as Map<String, dynamic>;
+      List<ChatInfo> chatList = [];
+      if (decodedResponse.isEmpty) {
+        return chatList;
+      }
+      final users = decodedResponse[userId] as Map<String, dynamic>;
+      for (final key in users.keys) {
+        chatList.add(ChatInfo.fromJson((users[key] as Map<String, dynamic>)
+          ..putIfAbsent('name', () => key)));
+      }
+      return chatList;
+    }, data);
+    return result;
   }
 
   @override
@@ -102,23 +125,32 @@ class DioService implements NetworkService {
 
   @override
   Future<List<ChatInfo>> searchForChats(String searchValue) async {
-    final response = await _dio.get<Map<String, dynamic>>(
+    final response = await _dio.get<String>(
         '/${Location.chats.name}/.json',
         queryParameters: {
           'orderBy': r'"$key"',
           'startAt': '"$searchValue"',
           'endAt': '"$searchValue\uf8ff"'
         });
-    final output = <ChatInfo>[];
-    if (response.data!.isEmpty) {
-      return output;
+    if (response.data == null) {
+      return [];
     }
-    final chats = response.data!;
-    for (final key in chats.keys) {
-      output.add(ChatInfo.fromJson((chats[key] as Map<String, dynamic>)
-        ..putIfAbsent('name', () => key)));
-    }
-    return output;
+    final data = TransferableTypedData.fromList(
+        [Int32List.fromList(response.data!.codeUnits)]);
+    final result = await compute<TransferableTypedData, List<ChatInfo>>((message) {
+      final decodedResponse = json.decode(
+          String.fromCharCodes(message.materialize().asUint32List())) as Map<String, dynamic>;
+      List<ChatInfo> chats = [];
+      if (decodedResponse.isEmpty) {
+        return chats;
+      }
+      for (final key in decodedResponse.keys) {
+        chats.add(ChatInfo.fromJson((decodedResponse[key] as Map<String, dynamic>)
+          ..putIfAbsent('name', () => key)));
+      }
+      return chats;
+    }, data);
+   return result;
   }
 
   @override
@@ -137,19 +169,31 @@ class DioService implements NetworkService {
 
   @override
   Future<List<Message>> getChatMessages(ChatInfo chatInfo) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-        '/${Location.messages.name}.json',
-        queryParameters: {'orderBy': r'"$key"', 'equalTo': '"${chatInfo.name}"'});
-    final output = <Message>[];
-    if (response.data!.isEmpty) {
-      return output;
+    final response = await _dio.get<String>('/${Location.messages.name}.json',
+        queryParameters: {
+          'orderBy': r'"$key"',
+          'equalTo': '"${chatInfo.name}"'
+        });
+    if (response.data == null) {
+      return [];
     }
-    final messages = response.data![chatInfo.name] as Map<String, dynamic>;
-    for (final key in messages.keys) {
-      output.add(Message.fromJson((messages[key] as Map<String, dynamic>)
-        ..putIfAbsent('id', () => key)));
-    }
-    return output;
+    final data = TransferableTypedData.fromList(
+        [Int32List.fromList(response.data!.codeUnits)]);
+    final result = await compute<TransferableTypedData, List<Message>>((message) {
+      final decodedResponse = json.decode(
+              String.fromCharCodes(message.materialize().asUint32List())) as Map<String, dynamic>;
+      List<Message> messageList = [];
+      if (decodedResponse.isEmpty) {
+        return messageList;
+      }
+      final messages = decodedResponse[chatInfo.name] as Map<String, dynamic>;
+      for (final key in messages.keys) {
+        messageList.add(Message.fromJson((messages[key] as Map<String, dynamic>)
+          ..putIfAbsent('id', () => key)));
+      }
+      return messageList;
+    }, data);
+    return result;
   }
 
   @override
@@ -171,7 +215,9 @@ class DioService implements NetworkService {
 
   @override
   Future<void> leaveChat(ChatInfo chatInfo, UserInfo userInfo) async {
-    await _dio.delete('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json');
-    await _dio.delete('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json');
+    await _dio.delete(
+        '/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json');
+    await _dio.delete(
+        '/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json');
   }
 }

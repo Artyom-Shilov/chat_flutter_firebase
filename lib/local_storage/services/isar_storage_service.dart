@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:isar/isar.dart';
 
 class IsarStorageService implements LocalStorageService {
-
   late Isar _isar;
 
   @override
@@ -18,8 +17,7 @@ class IsarStorageService implements LocalStorageService {
       LocalChatInfoSchema,
       LocalChatMemberSchema,
       LocalMessageSchema
-    ],
-        directory: directory.path);
+    ], directory: directory.path);
   }
 
   @override
