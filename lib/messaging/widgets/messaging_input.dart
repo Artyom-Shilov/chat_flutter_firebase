@@ -25,7 +25,7 @@ class MessagingInput extends StatelessWidget {
             child: TextField(
               maxLines: null,
               decoration: const InputDecoration(
-                  hintText: MessagingTexts.messageInputHint,
+                  hintText: MessagingTexts.messageInputHintRu,
                   border: InputBorder.none),
               keyboardType: TextInputType.multiline,
               controller: messagingCubit.messageInputController,

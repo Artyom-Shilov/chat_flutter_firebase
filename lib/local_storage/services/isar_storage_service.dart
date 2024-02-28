@@ -75,7 +75,7 @@ class IsarStorageService implements LocalStorageService {
   }
 
   @override
-  Future<void> addChatMember(LocalChatMember chatMember) async {
+  Future<void> saveChatMember(LocalChatMember chatMember) async {
     await _isar.writeTxn(() async {
       await _isar.localChatMembers.putByIndex('chatName_userId', chatMember);
     });

@@ -6,11 +6,13 @@ import 'package:flutter/cupertino.dart';
 
 abstract interface class MessagingCubit extends Cubit<MessagingState> {
   MessagingCubit(super.initialState);
+
   Future<void> sendTextMessage(UserInfo sender);
   Future<void> init();
   Future<void> sendImageFromGallery(UserInfo sender);
   Future<void> sendVideoFromGallery(UserInfo sender);
   Future<void> sendImageFromCamera(UserInfo sender);
+  Future<void> changeNotificationsStatus(UserInfo userInfo);
 
   TextEditingController get messageInputController;
   ScrollController get messageListController;

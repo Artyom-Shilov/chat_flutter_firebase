@@ -16,7 +16,9 @@ class UserInfo with _$UserInfo {
     String? name,
     String? email,
     String? photoUrl,
-    String? aboutUser
+    String? aboutUser,
+    String? notificationsToken,
+    bool? isNotificationsEnabled
   }) = _UserInfo;
 
   factory UserInfo.fromJson(Map<String, dynamic> json) =>
@@ -45,6 +47,7 @@ class UserInfo with _$UserInfo {
       email: localChatMember.email,
       photoUrl: localChatMember.photoUrl,
       id: localChatMember.userId,
+      isNotificationsEnabled: localChatMember.isNotificationsEnabled,
     );
   }
 }

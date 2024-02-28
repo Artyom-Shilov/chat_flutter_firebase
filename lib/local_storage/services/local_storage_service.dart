@@ -16,7 +16,7 @@ abstract interface class LocalStorageService {
   Future<void> deleteUserChat(LocalChatInfo chatInfo);
 
   Future<void> saveChatMembers(List<LocalChatMember> chatMembers);
-  Future<void> addChatMember(LocalChatMember chatMember);
+  Future<void> saveChatMember(LocalChatMember chatMember);
   Future<void> deleteChatMember(LocalChatMember chatMember);
   Future<List<LocalChatMember>> getChatMembers(String chatName);
 

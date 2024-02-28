@@ -20,11 +20,12 @@ enum Location {
 
 class DioService implements NetworkService {
 
-  final Dio _dio = Dio();
+  final Dio _dioForRealtimeDatabase = Dio();
+  final Dio _cleanDio = Dio();
   final String firebaseRealtimeDatabaseUrl = 'https://flutter-chat-ede6d-default-rtdb.europe-west1.firebasedatabase.app';
 
   DioService() {
-    _dio.options = BaseOptions(
+    _dioForRealtimeDatabase.options = BaseOptions(
         baseUrl: firebaseRealtimeDatabaseUrl,
         contentType: Headers.jsonContentType,
         validateStatus: (_) => true);
@@ -33,12 +34,12 @@ class DioService implements NetworkService {
   @override
   Future<void> saveUser(UserInfo user) async {
     final json = user.toJson();
-    await _dio.put('/${Location.profiles.name}/${user.id}.json', data: json);
+    await _dioForRealtimeDatabase.put('/${Location.profiles.name}/${user.id}.json', data: json);
   }
 
   @override
   Future<List<UserInfo>> getChatMembers(ChatInfo chatInfo) async {
-    final response = await _dio.get<String>(
+    final response = await _dioForRealtimeDatabase.get<String>(
         '/${Location.chatMembers.name}/.json',
         queryParameters: {
           'orderBy': r'"$key"',
@@ -68,7 +69,7 @@ class DioService implements NetworkService {
 
   @override
   Future<List<ChatInfo>> getChatsByUser(String userId) async {
-    final response = await _dio.get<String>(
+    final response = await _dioForRealtimeDatabase.get<String>(
         '/${Location.userChats.name}/.json',
         queryParameters: {'orderBy': r'"$key"', 'equalTo': '"$userId"'});
     if (response.data == null) {
@@ -95,7 +96,7 @@ class DioService implements NetworkService {
 
   @override
   Future<UserInfo?> getUserInfoById(String id) async {
-    final response = await _dio.get<Map<String, dynamic>>(
+    final response = await _dioForRealtimeDatabase.get<Map<String, dynamic>>(
         '/${Location.profiles.name}.json',
         queryParameters: {'orderBy': r'"$key"', 'equalTo': '"$id"'});
     log('getUserInfoById response ${response.data}');
@@ -107,7 +108,7 @@ class DioService implements NetworkService {
 
   @override
   Future<bool> isChatInDatabase(String chatName) async {
-    final response = await _dio.get<Map<dynamic, dynamic>>(
+    final response = await _dioForRealtimeDatabase.get<Map<dynamic, dynamic>>(
         '/${Location.chats.name}.json',
         queryParameters: {'orderBy': r'"$key"', 'equalTo': '"$chatName"'});
     log('isChatInDatabase: ${response.data}');
@@ -118,14 +119,14 @@ class DioService implements NetworkService {
   Future<void> saveChat(ChatInfo chatInfo, UserInfo userInfo) async {
     final chatJson = chatInfo.toJson();
     final userJson = userInfo.toJson();
-    await _dio.put('/${Location.chats.name}/${chatInfo.name}.json', data: chatJson);
-    await _dio.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
-    await _dio.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
+    await _dioForRealtimeDatabase.put('/${Location.chats.name}/${chatInfo.name}.json', data: chatJson);
+    await _dioForRealtimeDatabase.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
+    await _dioForRealtimeDatabase.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
   }
 
   @override
   Future<List<ChatInfo>> searchForChats(String searchValue) async {
-    final response = await _dio.get<String>(
+    final response = await _dioForRealtimeDatabase.get<String>(
         '/${Location.chats.name}/.json',
         queryParameters: {
           'orderBy': r'"$key"',
@@ -157,19 +158,19 @@ class DioService implements NetworkService {
   Future<void> joinChat(ChatInfo chatInfo, UserInfo userInfo) async {
     final chatJson = chatInfo.toJson();
     final userJson = userInfo.toJson();
-    await _dio.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
-    await _dio.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
+    await _dioForRealtimeDatabase.put('/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json', data: userJson);
+    await _dioForRealtimeDatabase.put('/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json', data: chatJson);
   }
 
   @override
   Future<void> sendMessage(Message message, ChatInfo chatInfo) async {
     final messageJson = message.toJson();
-    await _dio.put('/${Location.messages.name}/${chatInfo.name}/${message.id}.json', data: messageJson);
+    await _dioForRealtimeDatabase.put('/${Location.messages.name}/${chatInfo.name}/${message.id}.json', data: messageJson);
   }
 
   @override
   Future<List<Message>> getChatMessages(ChatInfo chatInfo) async {
-    final response = await _dio.get<String>('/${Location.messages.name}.json',
+    final response = await _dioForRealtimeDatabase.get<String>('/${Location.messages.name}.json',
         queryParameters: {
           'orderBy': r'"$key"',
           'equalTo': '"${chatInfo.name}"'
@@ -199,25 +200,74 @@ class DioService implements NetworkService {
   @override
   Future<void> updateChat(ChatInfo chatInfo) async {
     final chatJson = chatInfo.toJson();
-    await _dio.put('/${Location.chats.name}/${chatInfo.name}.json', data: chatJson);
+    await _dioForRealtimeDatabase.put('/${Location.chats.name}/${chatInfo.name}.json', data: chatJson);
   }
 
   @override
-  Future<void> updateUserChats(
+  Future<void> updateMembersChatInfo(
       ChatInfo chatInfo, List<UserInfo> chatUsers) async {
     final chatJson = chatInfo.toJson();
     final Map<String, dynamic> requestBody = {};
     for (final user in chatUsers) {
-      requestBody.putIfAbsent('${user.id}/${chatInfo.name}', () => chatJson);
-    }
-    await _dio.patch('/${Location.userChats.name}.json', data: requestBody);
+      requestBody.putIfAbsent('${user.id}/${chatInfo.name}', () => chatJson);}
+    await _dioForRealtimeDatabase.patch('/${Location.userChats.name}.json', data: requestBody);
   }
 
   @override
   Future<void> leaveChat(ChatInfo chatInfo, UserInfo userInfo) async {
-    await _dio.delete(
+    await _dioForRealtimeDatabase.delete(
         '/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json');
-    await _dio.delete(
+    await _dioForRealtimeDatabase.delete(
         '/${Location.userChats.name}/${userInfo.id}/${chatInfo.name}.json');
+  }
+
+  @override
+  Future<void> updateChatMemberNotificationStatus(
+      ChatInfo chatInfo, UserInfo userInfo) async {
+    await _dioForRealtimeDatabase.patch(
+        '/${Location.chatMembers.name}/${chatInfo.name}/${userInfo.id}.json',
+        data: {
+          'isNotificationsEnabled': userInfo.isNotificationsEnabled ?? false
+        });
+  }
+
+  @override
+  Future<void> sendNotificationAboutChatUpdate(
+      {required String body,
+      required String title,
+      required ChatInfo chat,
+      required UserInfo sender,
+      required String key,
+      required List<UserInfo> chatMembers}) async {
+    log(chatMembers.toString());
+    log(sender.toString());
+    for (final member in chatMembers) {
+      if (member.id != sender.id &&
+          member.notificationsToken != null &&
+          (member.isNotificationsEnabled ?? false)) {
+
+        final chatJson = chat.toJson();
+        chatJson.putIfAbsent('name', () => chat.name);
+
+        await _cleanDio.post('https://fcm.googleapis.com/fcm/send',
+            options: Options(headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'key=$key',
+            }),
+            data: {
+              "to": member.notificationsToken,
+              'priority': 'high',
+              'notification': <String, dynamic>{
+                'body': body,
+                'title': title,
+              },
+              'data': {
+                'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+                'status': 'done',
+                'chat': chatJson,
+              }
+            });
+      }
+    }
   }
 }

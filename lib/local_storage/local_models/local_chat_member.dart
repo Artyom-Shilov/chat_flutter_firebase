@@ -13,6 +13,7 @@ class LocalChatMember {
     this.name,
     this.email,
     this.photoUrl,
+    this.isNotificationsEnabled,
     required this.userId,
     required this.chatName,
   });
@@ -24,15 +25,17 @@ class LocalChatMember {
   @Index(composite: [CompositeIndex('userId')])
   String chatName;
   String? photoUrl;
+  bool? isNotificationsEnabled;
   Id id = Isar.autoIncrement;
 
-  factory LocalChatMember.fromUserAndChatInfo(UserInfo appUser, ChatInfo chatInfo) {
+  factory LocalChatMember.fromUserAndChatInfo(UserInfo chatMember, ChatInfo chatInfo) {
     return LocalChatMember(
         chatName: chatInfo.name,
-        name: appUser.name,
-        email: appUser.email,
-        photoUrl: appUser.photoUrl,
-        userId: appUser.id
+        name: chatMember.name,
+        email: chatMember.email,
+        photoUrl: chatMember.photoUrl,
+        isNotificationsEnabled: chatMember.isNotificationsEnabled,
+        userId: chatMember.id
     );
   }
 }

@@ -87,4 +87,11 @@ class FirebaseEventsListening implements DatabaseEventsListening {
         .ref('${Location.chatMembers.name}/${chatInfo.name}');
     return chatMembersRef.onChildRemoved.transform(_userTransformer);
   }
+
+  @override
+  Stream<UserInfo> chatMembersUpdates(ChatInfo chatInfo) {
+    final chatMembersRef = FirebaseDatabase.instance
+        .ref('${Location.chatMembers.name}/${chatInfo.name}');
+    return chatMembersRef.onChildChanged.transform(_userTransformer);
+  }
 }

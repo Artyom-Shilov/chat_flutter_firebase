@@ -9,6 +9,7 @@ import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/connectivity/network_connectivity.dart';
 import 'package:chat_flutter_firebase/local_storage/local_models/local_user_info.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
+import 'package:chat_flutter_firebase/notifications/notification_service.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -21,10 +22,12 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
     required NetworkService networkService,
     required LocalStorageService localStorageService,
     required NetworkConnectivity networkConnectivity,
+    required NotificationService notificationService
   })  : _auth = authService,
         _networkService = networkService,
         _localStorage = localStorageService,
         _networkConnectivity = networkConnectivity,
+        _notificationService = notificationService,
         super(const AuthState(status: AuthStatus.signedOut)) {
     userSubscription =
         _auth.authStateChanges().listen((firebaseAuthUser) async {
@@ -44,6 +47,7 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
   final AuthService _auth;
   final NetworkService _networkService;
   final LocalStorageService _localStorage;
+  final NotificationService _notificationService;
   final NetworkConnectivity _networkConnectivity;
   StreamSubscription<User?>? userSubscription;
 
@@ -56,9 +60,14 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       }
       await _auth.createUserByEmailAndPassword(email, password);
       await _receivedFirebaseUserCompleter.future;
-      final appUser =
+      await _notificationService.requestPermissions();
+      final notificationToken = await _notificationService.getNotificationsToken();
+      app_models.UserInfo appUser =
           app_models.UserInfo.fromFirebaseAuthUser(state.firebaseUser!)
               .copyWith(name: username);
+      if (notificationToken != null) {
+        appUser = appUser.copyWith(notificationsToken: notificationToken);
+      }
       emit(state.copyWith(user: appUser, status: AuthStatus.signedIn));
       _saveUserToRemoteDatabase(appUser);
       _saveUserToLocalDatabase(appUser);
@@ -83,19 +92,22 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       }
       await _auth.signInByEmailAndPassword(email, password);
       await _receivedFirebaseUserCompleter.future;
-      final userInfoFromFirebaseAuth =
+      await _notificationService.requestPermissions();
+      final notificationToken =
+          await _notificationService.getNotificationsToken();
+      app_models.UserInfo appUser =
           app_models.UserInfo.fromFirebaseAuthUser(state.firebaseUser!);
-      emit(state.copyWith(
-          user: userInfoFromFirebaseAuth, status: AuthStatus.signedIn));
-      _networkService
-          .getUserInfoById(state.firebaseUser!.uid)
-          .then((userInfoFromServer) {
-        emit(state.copyWith(
-            user: userInfoFromServer ?? userInfoFromFirebaseAuth,
-            status: AuthStatus.signedIn));
-        _saveUserToLocalDatabase(
-            userInfoFromServer ?? userInfoFromFirebaseAuth);
-      });
+      if (notificationToken != null) {
+        appUser = appUser.copyWith(notificationsToken: notificationToken);
+      }
+      emit(state.copyWith(user: appUser, status: AuthStatus.signedIn));
+      if (notificationToken != null) {
+        await _networkService.saveUser(appUser);
+      }
+      final latestInfo =
+          (await _networkService.getUserInfoById(state.firebaseUser!.uid))!;
+      emit(state.copyWith(user: latestInfo, status: AuthStatus.signedIn));
+      _saveUserToLocalDatabase(latestInfo);
     } on FirebaseAuthException catch (e, stackTrace) {
       _handleFirebaseException(e, stackTrace);
     } catch (e, stackTrace) {
@@ -119,23 +131,34 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
       emit(state.copyWith(status: AuthStatus.loading));
       await _auth.signInByGoogle();
       await _receivedFirebaseUserCompleter.future;
-      final userInfoFromFirebaseAuth =
+      app_models.UserInfo userInfoFromFirebaseAuth =
           app_models.UserInfo.fromFirebaseAuthUser(state.firebaseUser!);
+      final notificationToken = await _notificationService.getNotificationsToken();
+      await _notificationService.requestPermissions();
+      if (notificationToken != null) {
+        userInfoFromFirebaseAuth = userInfoFromFirebaseAuth.copyWith(
+            notificationsToken: notificationToken);
+      }
       emit(state.copyWith(
           user: userInfoFromFirebaseAuth, status: AuthStatus.signedIn));
-      _saveUserToRemoteDatabaseIfAbsent(state.firebaseUser!)
+      _saveUserToRemoteDatabaseIfAbsent(userInfoFromFirebaseAuth)
           .then((isNewUser) async {
         if (isNewUser) {
           _saveUserToLocalDatabase(userInfoFromFirebaseAuth);
           return userInfoFromFirebaseAuth;
         } else {
-          final userInfoFromServer =
+          app_models.UserInfo latestInfo =
               (await _networkService.getUserInfoById(state.firebaseUser!.uid))!;
-          _saveUserToLocalDatabase(userInfoFromServer);
-          return userInfoFromServer;
+          if (notificationToken != null) {
+            latestInfo = latestInfo.copyWith(notificationsToken: notificationToken);
+            _networkService.saveUser(latestInfo);
+          }
+          _saveUserToLocalDatabase(latestInfo);
+          return latestInfo;
         }
-      }).then((value) =>
-              emit(state.copyWith(user: value, status: AuthStatus.signedIn)));
+      }).then((value) {
+        emit(state.copyWith(user: value, status: AuthStatus.signedIn));
+      });
     } catch (e, stacktrace) {
       log(stacktrace.toString());
       emit(state.copyWith(
@@ -161,8 +184,7 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
     }
   }
 
-  Future<bool> _saveUserToRemoteDatabaseIfAbsent(User firebaseUser) async {
-    final userInfo = app_models.UserInfo.fromFirebaseAuthUser(firebaseUser);
+  Future<bool> _saveUserToRemoteDatabaseIfAbsent(app_models.UserInfo userInfo ) async {
     if (await _networkService.getUserInfoById(userInfo.id) == null) {
       await _networkService.saveUser(userInfo);
       return true;
@@ -194,12 +216,21 @@ class AuthCubitImpl extends Cubit<AuthState> implements AuthCubit {
   Future<void> setAppUser() async {
     try {
       await _receivedFirebaseUserCompleter.future;
-      emit(state.copyWith(
-          status: AuthStatus.signedIn,
-          user: await _networkConnectivity.checkNetworkConnection()
-              ? await _networkService.getUserInfoById(state.firebaseUser!.uid)
-              : app_models.UserInfo.fromLocalUserInfo(
-              (await _localStorage.getSavedAppUser())!)));
+      if (await _networkConnectivity.checkNetworkConnection()) {
+        final notificationsToken =
+            await _notificationService.getNotificationsToken();
+        final remoteUserInfo =
+            await _networkService.getUserInfoById(state.firebaseUser!.uid);
+        emit(state.copyWith(
+            status: AuthStatus.signedIn,
+            user: remoteUserInfo!
+                .copyWith(notificationsToken: notificationsToken)));
+      } else {
+        emit(state.copyWith(
+            status: AuthStatus.signedIn,
+            user: app_models.UserInfo.fromLocalUserInfo(
+                (await _localStorage.getSavedAppUser())!)));
+      }
     } catch (e, stackTrace) {
       log(stackTrace.toString());
       emit(state.copyWith(status: AuthStatus.error, message: AuthErrorTexts.setAppUserRu));

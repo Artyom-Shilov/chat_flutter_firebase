@@ -25,7 +25,7 @@ class CachedAvatar extends StatelessWidget {
             backgroundColor: Theme.of(context).primaryColor.withOpacity(0.5),
             child: Center(
                 child: Text(
-              name[0].toUpperCase(),
+              name.isNotEmpty ? name[0].toUpperCase() : '',
               style: const TextStyle(fontWeight: FontWeight.bold),
             )))
         : CachedNetworkImage(

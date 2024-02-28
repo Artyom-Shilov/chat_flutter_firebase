@@ -12,4 +12,5 @@ abstract interface class DatabaseEventsListening {
   Stream<ChatInfo> addedUserChatsStream();
   Stream<UserInfo> addedChatMemberStream(ChatInfo chatInfo);
   Stream<UserInfo> deletedChatMemberStream(ChatInfo chatInfo);
+  Stream<UserInfo> chatMembersUpdates(ChatInfo chatInfo);
 }

@@ -133,7 +133,8 @@ class ChatSearchCubitImpl extends Cubit<SearchState>
             message: ChatErrorsTexts.noConnectionRU));
         return;
       }
-      await _networkService.joinChat(chatInfo, userInfo);
+      await _networkService.joinChat(
+          chatInfo, userInfo.copyWith(isNotificationsEnabled: false));
       _storageService.addUserChat(LocalChatInfo.fromChatInfo(chatInfo));
     } catch (e, stackTrace) {
       log(stackTrace.toString());

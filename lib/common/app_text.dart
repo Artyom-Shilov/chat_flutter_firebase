@@ -60,6 +60,8 @@ abstract class ChatErrorsTexts {
 
 abstract class PopUpMenuTexts {
   static const String leaveChatRu = 'Покинуть чат';
+  static const String disableNotificationsRu = 'Отключить уведомления';
+  static const String enableNotificationsRu = 'Включить уведомления';
 }
 
 abstract class MessagingTexts {
@@ -68,13 +70,19 @@ abstract class MessagingTexts {
   static const addPhotoFromGalleryRu = 'Выбрать фото из галерии';
   static const addVideoFromGalleryRu = 'Выбрать видео из галерии';
   static const addPhotoFromCameraRu = 'Снять фото';
-  static const messageInputHint = 'Сообщение';
+  static const messageInputHintRu = 'Сообщение';
 }
 
 abstract class MessagingErrorsTexts {
 
   static const String loadMessagesRu = 'Ошибка получения сообщений';
   static const String sendMessageRu = 'Ошибка отправки сообщений';
+  static const String changeNotificationsStatus = 'Ошибка смены статуса';
   static const String noConnectionRu = 'Нет доступа к сети';
+}
 
+abstract class NotificationsTexts {
+  static const String newTextMessageRu = 'Пришло новое сообщение';
+  static const String newVideoRu = 'Пришло видео  🎞️';
+  static const String newImageRu = 'Пришло изображение  📷';
 }
