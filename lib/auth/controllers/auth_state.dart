@@ -16,7 +16,6 @@ class AuthState with _$AuthState {
   const factory AuthState({
     required AuthStatus status,
     UserInfo? user,
-    firebase.User? firebaseUser,
     @Default('') String message,
     @Default(false) bool isPasswordInputVisible,
     @Default(false) bool isRegistration}) = _AuthState;

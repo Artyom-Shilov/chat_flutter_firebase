@@ -60,6 +60,8 @@ dependencies:
   video_player: ^2.8.2
   firebase_messaging: ^14.7.10
   flutter_local_notifications: ^16.3.2
+  bloc_test: ^9.1.6
+  mocktail: ^1.0.3
 
 
 dev_dependencies:
