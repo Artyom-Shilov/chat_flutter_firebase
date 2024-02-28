@@ -11,6 +11,7 @@ import 'package:chat_flutter_firebase/local_storage/services/local_storage_servi
 import 'package:chat_flutter_firebase/messaging/controllers/messaging_cubit.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/messaging_cubit_impl.dart';
 import 'package:chat_flutter_firebase/messaging/pages/chat_messaging_page.dart';
+import 'package:chat_flutter_firebase/notifications/notification_service.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,7 +83,8 @@ class AppNavigation {
                       networkService: GetIt.I.get<NetworkService>(),
                       eventsListening: GetIt.I.get<DatabaseEventsListening>(),
                       databaseFileHandler: GetIt.I.get<DatabaseFileHandler>(),
-                      localFileHandler: GetIt.I.get<LocalFileHandler>()),
+                      localFileHandler: GetIt.I.get<LocalFileHandler>(),
+                      notificationService: GetIt.I.get<NotificationService>()),
                   child: const ChatMessagingPage()))
         ]),
   ]);

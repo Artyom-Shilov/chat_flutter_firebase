@@ -18,7 +18,7 @@ class MessagesList extends StatelessWidget {
       padding: const EdgeInsets.all(Sizes.verticalInset2),
       child: BlocBuilder<MessagingCubit, MessagingState>(
           buildWhen: (prev, next) =>
-          prev.messages != next.messages || prev.members != next.members,
+          prev.messages != next.messages || prev.members.length != next.members.length,
         builder: (context, state) {
           final messages = messagingCubit.messages;
           return ListView.separated(

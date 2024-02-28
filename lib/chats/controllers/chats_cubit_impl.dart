@@ -11,6 +11,7 @@ import 'package:chat_flutter_firebase/connectivity/network_connectivity.dart';
 import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
 import 'package:chat_flutter_firebase/local_storage/local_models/local_chat_info.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
+import 'package:chat_flutter_firebase/notifications/notification_service.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
 import 'package:flutter/widgets.dart';
 
@@ -19,11 +20,13 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
       {required NetworkService networkService,
       required LocalStorageService storageService,
       required NetworkConnectivity networkConnectivity,
-      required DatabaseEventsListening eventsListening})
+      required DatabaseEventsListening eventsListening,
+      required NotificationService notificationService})
       : _networkConnectivity = networkConnectivity,
         _storageService = storageService,
         _networkService = networkService,
         _eventsListening = eventsListening,
+        _notificationService = notificationService,
         super(const ChatsState(status: ChatsStatus.loading)) {
     _statesSubscription = stream.listen((event) {
       if (_userChatsUpdatesSubscription == null &&
@@ -71,6 +74,7 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
   final DatabaseEventsListening _eventsListening;
   final LocalStorageService _storageService;
   final NetworkConnectivity _networkConnectivity;
+  final NotificationService _notificationService;
   late int _chatNumberAfterLoad;
 
   @override
@@ -184,5 +188,10 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
         ? await Future.delayed(delay)
         : null;
     emit(state.copyWith(status: status));
+  }
+
+  @override
+  void startListenNotifications(BuildContext context) {
+    _notificationService.startListening(context);
   }
 }

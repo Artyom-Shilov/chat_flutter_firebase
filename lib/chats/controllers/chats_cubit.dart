@@ -16,6 +16,8 @@ abstract interface class ChatsCubit extends Cubit<ChatsState> {
   void resetChatCreationError();
   void clearChatName();
 
+  void startListenNotifications(BuildContext context);
+
   List<ChatInfo> get userChats;
   Future<void> setStateStatus({Duration? delay, required ChatsStatus status});
 }

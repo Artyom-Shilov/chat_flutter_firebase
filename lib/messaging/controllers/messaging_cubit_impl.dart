@@ -18,6 +18,7 @@ import 'package:chat_flutter_firebase/local_storage/local_models/local_message.d
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/messaging_cubit.dart';
 import 'package:chat_flutter_firebase/messaging/controllers/messaging_state.dart';
+import 'package:chat_flutter_firebase/notifications/notification_service.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
 import 'package:flutter/material.dart';
 
@@ -30,10 +31,12 @@ class MessagingCubitImpl extends Cubit<MessagingState>
       required NetworkService networkService,
       required DatabaseEventsListening eventsListening,
       required DatabaseFileHandler databaseFileHandler,
-      required LocalFileHandler localFileHandler})
+      required LocalFileHandler localFileHandler,
+      required NotificationService notificationService})
       : _networkConnectivity = networkConnectivity,
         _localStorageService = localStorageService,
         _networkService = networkService,
+        _notificationService = notificationService,
         _eventsListening = eventsListening,
         _databaseFileHandler = databaseFileHandler,
         _localFileHandler = localFileHandler,
@@ -87,12 +90,23 @@ class MessagingCubitImpl extends Cubit<MessagingState>
                 ..removeWhere((element) => element.id == event.id)));
         });
       }
+      if (_membersUpdatesSubscription == null &&
+          event.status == MessagingStatus.ready) {
+        _membersUpdatesSubscription =
+            _eventsListening.chatMembersUpdates(state.chat).listen((event) {
+          final index =
+              state.members.indexWhere((element) => element.id == event.id);
+          emit(
+              state.copyWith(members: List.of(state.members)..[index] = event));
+        });
+      }
     });
   }
 
   final NetworkService _networkService;
   final LocalStorageService _localStorageService;
   final NetworkConnectivity _networkConnectivity;
+  final NotificationService _notificationService;
   final DatabaseEventsListening _eventsListening;
   final DatabaseFileHandler _databaseFileHandler;
   final LocalFileHandler _localFileHandler;
@@ -100,6 +114,7 @@ class MessagingCubitImpl extends Cubit<MessagingState>
   StreamSubscription<Message>? _messageUpdateSubscription;
   StreamSubscription<UserInfo>? _newMembersSubscription;
   StreamSubscription<UserInfo>? _deletedMembersSubscription;
+  StreamSubscription<UserInfo>? _membersUpdatesSubscription;
   StreamSubscription<MessagingState>? _statesSubscription;
   late int _messageNumberAfterLoad;
   late int _membersNumberAfterLoad;
@@ -114,7 +129,7 @@ class MessagingCubitImpl extends Cubit<MessagingState>
         lastMessageText: lastMessageText,
         lastMessageTime: lastMessageTime);
     await _networkService.updateChat(infoForUpdate);
-    await _networkService.updateUserChats(infoForUpdate, state.members);
+    await _networkService.updateMembersChatInfo(infoForUpdate, state.members);
   }
 
   @override
@@ -125,6 +140,7 @@ class MessagingCubitImpl extends Cubit<MessagingState>
     try {
       if (await _networkConnectivity.checkNetworkConnection()) {
         members = await _networkService.getChatMembers(state.chat);
+        log('reload ${members.toString()}');
         messages = await _networkService.getChatMessages(state.chat);
         _localStorageService.saveChatMembers(members
             .map((e) => LocalChatMember.fromUserAndChatInfo(e, state.chat))
@@ -239,7 +255,15 @@ class MessagingCubitImpl extends Cubit<MessagingState>
       );
       _localStorageService.addChatMessage(
           LocalMessage.fromMessageAndChatInfo(message, state.chat));
-      if (type == MessageType.text || file == null) {
+      if (type == MessageType.text) {
+        _notificationService.sendNotificationAboutChatUpdate(
+            body: NotificationsTexts.newTextMessageRu,
+            chat: state.chat,
+            members: state.members,
+            sender: sender);
+        return;
+      }
+      if (file == null) {
         return;
       }
       final String folder = switch (type) {
@@ -252,7 +276,36 @@ class MessagingCubitImpl extends Cubit<MessagingState>
           .then(
               (_) => _databaseFileHandler.getDownloadUrl('$folder/$messageId'))
           .then((url) => _networkService.sendMessage(
-              message.copyWith(fileRef: url), state.chat));
+              message.copyWith(fileRef: url), state.chat))
+          .then((_) {
+        _notificationService.sendNotificationAboutChatUpdate(
+            body: type == MessageType.video
+                ? NotificationsTexts.newVideoRu
+                : NotificationsTexts.newImageRu,
+            chat: state.chat,
+            members: state.members,
+            sender: sender);
+      });
+    } catch (e, stackTrace) {
+      log(stackTrace.toString());
+      emit(state.copyWith(
+          status: MessagingStatus.error,
+          info: MessagingErrorsTexts.sendMessageRu));
+    }
+  }
+
+  @override
+  Future<void> changeNotificationsStatus(UserInfo userInfo) async {
+    if (!await _networkConnectivity.checkNetworkConnection()) {
+      emit(state.copyWith(
+          status: MessagingStatus.error,
+          info: MessagingErrorsTexts.noConnectionRu));
+      return;
+    }
+    try {
+      await _networkService.updateChatMemberNotificationStatus(state.chat, userInfo);
+      _localStorageService.saveChatMember(
+          LocalChatMember.fromUserAndChatInfo(userInfo, state.chat));
     } catch (e, stackTrace) {
       log(stackTrace.toString());
       emit(state.copyWith(

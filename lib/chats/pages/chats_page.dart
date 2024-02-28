@@ -26,6 +26,7 @@ class ChatListPage extends HookWidget {
     final navigation = GoRouter.of(context);
     useEffect(() {
       GetIt.I.get<DatabaseEventsListening>().currentUserId = authCubit.user!.id;
+      chatsCubit.startListenNotifications(context);
       chatsCubit.loadChatsByUserId(authCubit.user!.id);
       return () {
         GetIt.I.get<DatabaseEventsListening>().currentUserId = null;

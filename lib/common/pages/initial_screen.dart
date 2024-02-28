@@ -3,7 +3,6 @@ import 'package:chat_flutter_firebase/auth/controllers/auth_state.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get_it/get_it.dart';
@@ -19,7 +18,7 @@ class InitialScreen extends HookWidget {
     useAnimationController();
     useEffect(() {
       final storageService = GetIt.I.get<LocalStorageService>();
-      Future.delayed(const Duration(seconds: 3)).then((value) => storageService
+      Future.delayed(const Duration(seconds: 1)).then((value) => storageService
           .init()
           .then((_) => storageService.getSavedAppUser().then((user) async {
                 if (user == null) {
@@ -31,10 +30,7 @@ class InitialScreen extends HookWidget {
                       : navigation.goNamed(Routes.signIn.routeName);
                 }
               })));
-      return () {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-            overlays: SystemUiOverlay.values); // to re-show bars
-      };
+      return null;
     }, ['key']);
     return BlocListener<AuthCubit, AuthState>(
         listenWhen: (prev, next) => prev.status != next.status,
