@@ -17,7 +17,7 @@ import '../../test_realizations/test_local_storage_service.dart';
 import '../../test_realizations/test_network_connectivity_service.dart';
 import '../../test_realizations/test_network_service.dart';
 import '../../test_realizations/test_notification_service.dart';
-import '../test_consts.dart';
+import '../../test_consts.dart';
 
 main() {
   late AuthService authService;
@@ -34,7 +34,7 @@ main() {
         localStorageService = TestLocalStorageService();
         networkService = TestNetworkService();
         notificationService = TestNotificationService();
-        networkConnectivity = MockNetworkConnectivity();
+        networkConnectivity = TestNetworkConnectivity();
       },
       build: () {
         when(() => networkConnectivity.checkNetworkConnection())
@@ -69,7 +69,7 @@ main() {
           localStorageService = TestLocalStorageService();
           networkService = TestNetworkService();
           notificationService = TestNotificationService();
-          networkConnectivity = MockNetworkConnectivity();
+          networkConnectivity = TestNetworkConnectivity();
         },
         build: () {
           when(() => networkConnectivity.checkNetworkConnection())

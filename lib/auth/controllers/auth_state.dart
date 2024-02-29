@@ -1,5 +1,4 @@
 import 'package:chat_flutter_firebase/app_models/user_info.dart';
-import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'auth_state.freezed.dart';

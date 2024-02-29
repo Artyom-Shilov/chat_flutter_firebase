@@ -43,6 +43,9 @@ class ChatCreationDialog extends StatelessWidget {
                     name: chatsCubit.chatCreationController.text.trim(),
                     adminId: authCubit.user!.id),
                     authCubit.user!);
+                chatsCubit.state.userChats.isEmpty
+                    ? chatsCubit.startListenUserChatsUpdates(authCubit.user!)
+                    : null;
                 chatsCubit.resetChatCreationError();
                 chatsCubit.clearChatName();
               }

@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chat_flutter_firebase/app_models/user_info.dart' as app;
 
 

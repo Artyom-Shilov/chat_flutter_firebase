@@ -39,7 +39,7 @@ class ChatMessagingPage extends HookWidget {
             children: [
               CachedAvatar(photoUrl: chatInfo.photoUrl, name: chatInfo.name, radius: 20),
               const SizedBox(width: 10),
-              Text(messagingCubit.state.chat.name),
+              Flexible(child: Text(messagingCubit.state.chat.name, maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
           actions: [

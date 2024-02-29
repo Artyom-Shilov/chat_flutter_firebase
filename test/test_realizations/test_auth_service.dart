@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:chat_flutter_firebase/app_models/user_info.dart';
 import 'package:chat_flutter_firebase/auth/services/auth_service.dart';
 
-import '../bloc_tests/test_consts.dart';
+import '../test_consts.dart';
 
 class TestAuthService implements AuthService {
   final StreamController<UserInfo?> streamController = StreamController();

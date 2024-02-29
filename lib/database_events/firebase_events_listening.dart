@@ -9,9 +9,6 @@ import 'package:firebase_database/firebase_database.dart';
 
 class FirebaseEventsListening implements DatabaseEventsListening {
 
-  @override
-  String? currentUserId;
-
   final _messageTransformer = StreamTransformer<DatabaseEvent, Message>.fromHandlers(
       handleData: (data, sink) {
         final messageId = data.snapshot.key!;
@@ -54,21 +51,21 @@ class FirebaseEventsListening implements DatabaseEventsListening {
   }
 
   @override
-  Stream<ChatInfo> userChatsUpdates() {
+  Stream<ChatInfo> userChatsUpdates(String currentUserId) {
     final messagesRef = FirebaseDatabase.instance
         .ref('${Location.userChats.name}/$currentUserId');
     return messagesRef.onChildChanged.transform(_chatTransformer);
   }
 
   @override
-  Stream<ChatInfo> deletedUserChatsStream() {
+  Stream<ChatInfo> deletedUserChatsStream(String currentUserId) {
     final messagesRef = FirebaseDatabase.instance
         .ref('${Location.userChats.name}/$currentUserId');
     return messagesRef.onChildRemoved.transform(_chatTransformer);
   }
 
   @override
-  Stream<ChatInfo> addedUserChatsStream() {
+  Stream<ChatInfo> addedUserChatsStream(String currentUserId) {
     final messagesRef = FirebaseDatabase.instance
         .ref('${Location.userChats.name}/$currentUserId');
     return messagesRef.onChildAdded.transform(_chatTransformer);

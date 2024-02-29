@@ -1,5 +1,6 @@
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/chat_search_cubit.dart';
+import 'package:chat_flutter_firebase/chats/controllers/chats_cubit.dart';
 import 'package:chat_flutter_firebase/chats/controllers/search_state.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
@@ -14,6 +15,7 @@ class SearchResultList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchCubit = BlocProvider.of<ChatSearchCubit>(context);
+    final chatsCubit = BlocProvider.of<ChatsCubit>(context);
     final searchResults = searchCubit.searchResult;
     final authCubit = BlocProvider.of<AuthCubit>(context);
     return SliverList.separated(
@@ -50,6 +52,12 @@ class SearchResultList extends StatelessWidget {
                                 onPressed: () {
                                   searchCubit.joinChat(
                                       result.chat, authCubit.user!);
+                                  if (chatsCubit.state.userChats.isEmpty) {
+                                    chatsCubit.startListenUserChatsUpdates(
+                                        authCubit.user!);
+                                    searchCubit.startListeningChatUpdates(
+                                        authCubit.user!);
+                                  }
                                 },
                                 child: const Text(ChatTexts.doJoinRu));
                       },

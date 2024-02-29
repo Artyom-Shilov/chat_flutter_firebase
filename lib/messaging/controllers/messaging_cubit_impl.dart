@@ -48,7 +48,6 @@ class MessagingCubitImpl extends Cubit<MessagingState>
             .addedMessagesStream(state.chat)
             .skip(_messageNumberAfterLoad)
             .listen((event) {
-
           emit(state.copyWith(messages: List.of(state.messages)..add(event)));
         });
       }
@@ -60,15 +59,6 @@ class MessagingCubitImpl extends Cubit<MessagingState>
               state.messages.indexWhere((element) => element.id == event.id);
           emit(state.copyWith(
               messages: List.of(state.messages)..[indexForUpdate] = event));
-        });
-      }
-      if (_newMembersSubscription == null &&
-          event.status == MessagingStatus.ready) {
-        _newMembersSubscription = _eventsListening
-            .addedChatMemberStream(state.chat)
-            .skip(_membersNumberAfterLoad)
-            .listen((event) {
-          emit(state.copyWith(members: List.of(state.members)..add(event)));
         });
       }
       if (_newMembersSubscription == null &&
@@ -331,6 +321,8 @@ class MessagingCubitImpl extends Cubit<MessagingState>
     await _deletedMembersSubscription?.cancel();
     await _messageUpdateSubscription?.cancel();
     await _statesSubscription?.cancel();
+    messageListController.dispose();
+    messageInputController.dispose();
     return super.close();
   }
 

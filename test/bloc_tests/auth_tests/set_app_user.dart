@@ -4,7 +4,6 @@ import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit_impl.dart';
 import 'package:chat_flutter_firebase/auth/controllers/auth_state.dart';
 import 'package:chat_flutter_firebase/auth/services/auth_service.dart';
-import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/connectivity/network_connectivity.dart';
 import 'package:chat_flutter_firebase/local_storage/local_models/local_user_info.dart';
 import 'package:chat_flutter_firebase/local_storage/services/local_storage_service.dart';
@@ -18,7 +17,7 @@ import '../../test_realizations/test_local_storage_service.dart';
 import '../../test_realizations/test_network_connectivity_service.dart';
 import '../../test_realizations/test_network_service.dart';
 import '../../test_realizations/test_notification_service.dart';
-import '../test_consts.dart';
+import '../../test_consts.dart';
 
 main() {
   late AuthService authService;
@@ -35,7 +34,7 @@ main() {
         localStorageService = TestLocalStorageService();
         networkService = TestNetworkService();
         notificationService = TestNotificationService();
-        networkConnectivity = MockNetworkConnectivity();
+        networkConnectivity = TestNetworkConnectivity();
       },
       build: () {
         when(() => networkConnectivity.checkNetworkConnection())
@@ -81,7 +80,7 @@ main() {
         localStorageService = TestLocalStorageService();
         networkService = TestNetworkService();
         notificationService = TestNotificationService();
-        networkConnectivity = MockNetworkConnectivity();
+        networkConnectivity = TestNetworkConnectivity();
       },
       build: () {
         when(() => networkConnectivity.checkNetworkConnection())

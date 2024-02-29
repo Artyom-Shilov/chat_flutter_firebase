@@ -1,4 +1,6 @@
 import 'package:chat_flutter_firebase/auth/controllers/auth_cubit.dart';
+import 'package:chat_flutter_firebase/chats/controllers/chat_search_cubit.dart';
+import 'package:chat_flutter_firebase/chats/controllers/chats_cubit.dart';
 import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
 import 'package:chat_flutter_firebase/common/widgets/cached_avatar.dart';
@@ -14,6 +16,8 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authCubit = BlocProvider.of<AuthCubit>(context);
+    final chatsCubit = BlocProvider.of<ChatsCubit>(context);
+    final searchCubit = BlocProvider.of<ChatSearchCubit>(context);
     final user = BlocProvider.of<AuthCubit>(context).user;
     final userName = user?.name ??  user?.email ?? user!.id;
     final navigation = GoRouter.of(context);
@@ -39,6 +43,10 @@ class AppDrawer extends StatelessWidget {
             title: const Text(AuthText.doLogout),
             onTap: () async {
               await authCubit.signOut();
+              await chatsCubit.stopListenUserChatsUpdates();
+              await searchCubit.stopListeningChatUpdates();
+              searchCubit.resetSearchResult();
+              searchCubit.clearSearchValue();
               navigation.goNamed(Routes.signIn.routeName);
             },
           )
