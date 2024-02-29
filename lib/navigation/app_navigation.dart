@@ -58,8 +58,7 @@ class AppNavigation {
             child: const ChatListPage(),
             transitionsBuilder: (context, animation, _, child) =>
                 FadeTransition(
-                    opacity: animation,
-                    child: child)),
+                    opacity: animation, child: child)),
         routes: [
           GoRoute(
               path: Routes.search.routeName,

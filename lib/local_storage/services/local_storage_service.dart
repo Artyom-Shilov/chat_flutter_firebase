@@ -10,7 +10,7 @@ abstract interface class LocalStorageService {
   Future<void> deleteCurrentAppUser();
   Future<LocalUserInfo?> getSavedAppUser();
 
-  Future<List<LocalChatInfo>> getUserChats();
+  Future<List<LocalChatInfo>> getUserChatsById(String userId);
   Future<void> saveUserChats(List<LocalChatInfo> userChats);
   Future<void> addUserChat(LocalChatInfo chatInfo);
   Future<void> deleteUserChat(LocalChatInfo chatInfo);

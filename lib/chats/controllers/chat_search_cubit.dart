@@ -15,6 +15,10 @@ abstract interface class ChatSearchCubit extends Cubit<SearchState> {
   void clearSearchValue();
   void resetSearchResult();
 
+  void startListeningChatUpdates(UserInfo userInfo);
+  Future<void> stopListeningChatUpdates();
+
   List<({ChatInfo chat, bool isJoined})> get searchResult;
+  bool get isListeningUserChatsUpdates;
   Future<void> setStateStatus({Duration? delay, required SearchStatus status});
 }

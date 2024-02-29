@@ -47,15 +47,15 @@ class IsarStorageService implements LocalStorageService {
   @override
   Future<void> saveUserChats(List<LocalChatInfo> userChats) async {
     await _isar.writeTxn(() async {
-      await _isar.localChatInfos.putAllByIndex('name', userChats);
+      await _isar.localChatInfos.putAllByIndex('userId_name', userChats);
     });
   }
 
   @override
-  Future<List<LocalChatInfo>> getUserChats() async {
+  Future<List<LocalChatInfo>> getUserChatsById(String userId) async {
     List<LocalChatInfo> result = [];
     await _isar.txn(() async {
-      result = await _isar.localChatInfos.where().findAll();
+      result = await _isar.localChatInfos.filter().userIdEqualTo(userId).findAll();
     });
     return result;
   }
@@ -63,14 +63,14 @@ class IsarStorageService implements LocalStorageService {
   @override
   Future<void> addUserChat(LocalChatInfo chatInfo) async {
     await _isar.writeTxn(() async {
-      await _isar.localChatInfos.putByIndex('name', chatInfo);
+      await _isar.localChatInfos.putByIndex('userId_name', chatInfo);
     });
   }
 
   @override
   Future<void> deleteUserChat(LocalChatInfo chatInfo) async {
     await _isar.writeTxn(() async {
-      await _isar.localChatInfos.filter().nameEqualTo(chatInfo.name).deleteFirst();
+      await _isar.localChatInfos.where().userIdNameEqualTo(chatInfo.userId, chatInfo.name).deleteFirst();
     });
   }
 

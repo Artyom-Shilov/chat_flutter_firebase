@@ -8,12 +8,10 @@ import 'package:chat_flutter_firebase/common/app_text.dart';
 import 'package:chat_flutter_firebase/common/sizes.dart';
 import 'package:chat_flutter_firebase/common/snackbars.dart';
 import 'package:chat_flutter_firebase/common/widgets/app_drawer.dart';
-import 'package:chat_flutter_firebase/database_events/database_events_listening.dart';
 import 'package:chat_flutter_firebase/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 class ChatListPage extends HookWidget {
@@ -25,12 +23,13 @@ class ChatListPage extends HookWidget {
     final authCubit = BlocProvider.of<AuthCubit>(context);
     final navigation = GoRouter.of(context);
     useEffect(() {
-      GetIt.I.get<DatabaseEventsListening>().currentUserId = authCubit.user!.id;
       chatsCubit.startListenNotifications(context);
-      chatsCubit.loadChatsByUserId(authCubit.user!.id);
-      return () {
-        GetIt.I.get<DatabaseEventsListening>().currentUserId = null;
-      };
+      chatsCubit.loadChatsByUserId(authCubit.user!.id).then((_) {
+        if(chatsCubit.state.userChats.isNotEmpty) {
+          chatsCubit.startListenUserChatsUpdates(authCubit.user!);
+        }
+      });
+      return null;
     }, ['key']);
     return Scaffold(
         drawer: const AppDrawer(),
@@ -70,6 +69,7 @@ class ChatListPage extends HookWidget {
                   if (state.status == ChatsStatus.error) {
                     SnackBars.showCommonSnackBar(state.message, context);
                     chatsCubit.setStateStatus(status: ChatsStatus.ready);
+                    chatsCubit.startListenUserChatsUpdates(authCubit.user!);
                   }
                 },
                 builder: (context, state) {

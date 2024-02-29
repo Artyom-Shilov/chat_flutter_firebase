@@ -35,51 +35,61 @@ class ChatList extends StatelessWidget {
                   decoration: BoxDecoration(
                       color: Theme.of(context).primaryColor.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(Sizes.borderRadius1)),
-                  child: ListTile(
-                      onTap: () {
-                        GoRouter.of(context).goNamed(Routes.messaging.routeName,
-                            pathParameters: {Params.chatName.name: chat.name},
-                            extra: chat);
-                      },
-                        leading: CachedAvatar(
-                            photoUrl: chat.photoUrl,
-                            name: chat.name,
-                            placeholderWidget: LoadingAnimation(
-                                color: Theme.of(context).primaryColor),
-                            radius: 30),
-                        title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(chat.name),
-                              if (chat.lastMessageTime != null)
-                                Text(DateFormatter.I
-                                    .formatDate(chat.lastMessageTime!))
-                            ]),
-                        subtitle: lastUser != null
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
+                  child: Padding(
+                    padding:
+                    const EdgeInsets.symmetric(vertical: Sizes.verticalInset2),
+                    child: ListTile(
+                        onTap: () {
+                          GoRouter.of(context).goNamed(Routes.messaging.routeName,
+                              pathParameters: {Params.chatName.name: chat.name},
+                              extra: chat);
+                        },
+                          leading: CachedAvatar(
+                              photoUrl: chat.photoUrl,
+                              name: chat.name,
+                              placeholderWidget: LoadingAnimation(
+                                  color: Theme.of(context).primaryColor),
+                              radius: 30),
+                          title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(child: Text(chat.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis)),
+                                if (chat.lastMessageTime != null)
                                   Flexible(
-                                      child: Text(
-                                    '${chat.lastUserNameText}:',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  )),
-                                  const SizedBox(width: 10),
-                                  Flexible(
-                                    child: Text(
-                                      chat.lastMessageText == null
-                                          ? ''
-                                          : (chat.lastMessageText!.length > 10
-                                              ? '${chat.lastMessageText!.substring(0, 10)}...'
-                                              : chat.lastMessageText!),
+                                    child: Text(DateFormatter.I
+                                        .formatDate(chat.lastMessageTime!),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis),
+                                  )
+                              ]),
+                          subtitle: lastUser != null
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                        child: Text(
+                                      '${chat.lastUserNameText}:',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                    ),
-                                  )
-                                ],
-                              )
-                            : null),
+                                    )),
+                                    const SizedBox(width: 10),
+                                    Flexible(
+                                      child: Text(
+                                        chat.lastMessageText == null
+                                            ? ''
+                                            : (chat.lastMessageText!.length > 10
+                                                ? '${chat.lastMessageText!.substring(0, 10)}...'
+                                                : chat.lastMessageText!),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    )
+                                  ],
+                                )
+                              : null),
+                  ),
                   ),
                 );
               },

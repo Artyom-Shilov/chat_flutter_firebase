@@ -15,7 +15,7 @@ import 'package:chat_flutter_firebase/notifications/notification_service.dart';
 import 'package:chat_flutter_firebase/rest_network/network_service.dart';
 import 'package:flutter/widgets.dart';
 
-class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
+class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit {
   ChatsCubitImpl(
       {required NetworkService networkService,
       required LocalStorageService storageService,
@@ -27,58 +27,70 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
         _networkService = networkService,
         _eventsListening = eventsListening,
         _notificationService = notificationService,
-        super(const ChatsState(status: ChatsStatus.loading)) {
-    _statesSubscription = stream.listen((event) {
-      if (_userChatsUpdatesSubscription == null &&
-          event.status == ChatsStatus.ready &&
-          _eventsListening.currentUserId != null) {
-        _userChatsUpdatesSubscription =
-            _eventsListening.userChatsUpdates().listen((update) {
-          final index = state.userChats
-              .indexWhere((element) => element.name == update.name);
-          final updatedChats = List.of(state.userChats);
-          updatedChats[index] = update;
-          emit(state.copyWith(userChats: updatedChats));
-          _storageService.addUserChat(LocalChatInfo.fromChatInfo(update));
-        });
-      }
-      if (_removedUserChatsSubscription == null &&
-          event.status == ChatsStatus.ready &&
-          _eventsListening.currentUserId != null) {
-        _removedUserChatsSubscription =
-            _eventsListening.deletedUserChatsStream().listen((event) {
-              _storageService.deleteUserChat(LocalChatInfo.fromChatInfo(event));
-              emit(state.copyWith(
-              userChats: List.of(state.userChats)
-                ..removeWhere((element) => element.name == event.name)));
-        });
-        if (_addedUserChatSubscription == null &&
-            event.status == ChatsStatus.ready &&
-            _eventsListening.currentUserId != null) {
-          _addedUserChatSubscription =
-              _eventsListening.addedUserChatsStream().skip(_chatNumberAfterLoad).listen((event) {
-                _storageService.addUserChat(LocalChatInfo.fromChatInfo(event));
-                emit(state.copyWith(
-                userChats: List.of(state.userChats)..add(event)));
-          });
-        }
-      }
-    });
-  }
+        super(const ChatsState(status: ChatsStatus.loading));
 
   StreamSubscription<ChatInfo>? _userChatsUpdatesSubscription;
   StreamSubscription<ChatInfo>? _removedUserChatsSubscription;
   StreamSubscription<ChatInfo>? _addedUserChatSubscription;
-  StreamSubscription<ChatsState>? _statesSubscription;
   final NetworkService _networkService;
   final DatabaseEventsListening _eventsListening;
   final LocalStorageService _storageService;
   final NetworkConnectivity _networkConnectivity;
   final NotificationService _notificationService;
   late int _chatNumberAfterLoad;
+  @override
+  bool isListeningUserChatsUpdates = false;
 
   @override
   final TextEditingController chatCreationController = TextEditingController();
+
+  @override
+  void startListenUserChatsUpdates(UserInfo userInfo) {
+    if (isListeningUserChatsUpdates == true) {
+      return;
+    }
+    log('chats cubit: startListeningChatUpdates');
+    isListeningUserChatsUpdates = true;
+    _userChatsUpdatesSubscription ??= _eventsListening.userChatsUpdates(userInfo.id).listen((update) {
+        final index = state.userChats
+            .indexWhere((element) => element.name == update.name);
+        final updatedChats = List.of(state.userChats);
+        updatedChats[index] = update;
+        emit(state.copyWith(userChats: updatedChats));
+        _storageService.addUserChat(
+            LocalChatInfo.fromChatInfoAndUserId(update, userInfo.id));
+      });
+    if (_removedUserChatsSubscription == null) {
+      _removedUserChatsSubscription =
+          _eventsListening.deletedUserChatsStream(userInfo.id).listen((event) {
+        _storageService.deleteUserChat(
+            LocalChatInfo.fromChatInfoAndUserId(event, userInfo.id));
+        emit(state.copyWith(
+            userChats: List.of(state.userChats)
+              ..removeWhere((element) => element.name == event.name)));
+      });
+      _addedUserChatSubscription ??= _eventsListening
+            .addedUserChatsStream(userInfo.id)
+            .skip(_chatNumberAfterLoad)
+            .listen((event) {
+          log(event.toString());
+          _storageService.addUserChat(
+              LocalChatInfo.fromChatInfoAndUserId(event, userInfo.id));
+          emit(state.copyWith(userChats: List.of(state.userChats)..add(event)));
+        });
+    }
+  }
+
+  @override
+  Future<void> stopListenUserChatsUpdates() async {
+    isListeningUserChatsUpdates = false;
+    await _userChatsUpdatesSubscription?.cancel();
+    await _removedUserChatsSubscription?.cancel();
+    await _addedUserChatSubscription?.cancel();
+    _userChatsUpdatesSubscription = null;
+    _removedUserChatsSubscription = null;
+    _addedUserChatSubscription = null;
+  }
 
   @override
   Future<void> createChat(ChatInfo chatInfo, UserInfo userInfo) async {
@@ -91,10 +103,12 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
         return;
       }
       await _networkService.saveChat(chatInfo, userInfo);
-      _storageService.addUserChat(LocalChatInfo.fromChatInfo(chatInfo));
+      _storageService.addUserChat(
+          LocalChatInfo.fromChatInfoAndUserId(chatInfo, userInfo.id));
     } catch (e, stackTrace) {
       log(stackTrace.toString());
-      emit(state.copyWith(status: ChatsStatus.error, message: ChatErrorsTexts.createChatRu));
+      emit(state.copyWith(
+          status: ChatsStatus.error, message: ChatErrorsTexts.createChatRu));
     }
   }
 
@@ -106,10 +120,13 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
       List<ChatInfo> userChats = [];
       if (await _networkConnectivity.checkNetworkConnection()) {
         userChats = await _networkService.getChatsByUser(userId);
-        _storageService.saveUserChats(userChats.map((e) => LocalChatInfo.fromChatInfo(e)).toList());
+        _storageService.saveUserChats(userChats
+            .map((e) => LocalChatInfo.fromChatInfoAndUserId(e, userId))
+            .toList());
       } else {
-        final localChats = await _storageService.getUserChats();
-        userChats = localChats.map((e) => ChatInfo.fromLocalChatInfo(e)).toList();
+        final localChats = await _storageService.getUserChatsById(userId);
+        userChats =
+            localChats.map((e) => ChatInfo.fromLocalChatInfo(e)).toList();
       }
       _chatNumberAfterLoad = userChats.length;
       emit(state.copyWith(status: ChatsStatus.ready, userChats: userChats));
@@ -124,13 +141,13 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
   Future<void> leaveChat(ChatInfo chatInfo, UserInfo userInfo) async {
     if (!await _networkConnectivity.checkNetworkConnection()) {
       emit(state.copyWith(
-          status: ChatsStatus.error,
-          message: ChatErrorsTexts.noConnectionRU));
+          status: ChatsStatus.error, message: ChatErrorsTexts.noConnectionRU));
       return;
     }
     try {
       await _networkService.leaveChat(chatInfo, userInfo);
-      _storageService.deleteUserChat(LocalChatInfo.fromChatInfo(chatInfo));
+      _storageService.deleteUserChat(
+          LocalChatInfo.fromChatInfoAndUserId(chatInfo, userInfo.id));
     } catch (e, stackTrace) {
       log(stackTrace.toString());
       emit(state.copyWith(
@@ -153,10 +170,11 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
     log('chat name validation');
     final chatName = chatCreationController.text;
     if (chatName.isEmpty) {
-      emit(state.copyWith(chatCreationErrorText: ChatTexts.chatNameLengthFieldErrorRu));
+      emit(state.copyWith(
+          chatCreationErrorText: ChatTexts.chatNameLengthFieldErrorRu));
       return;
     }
-    if(await _networkConnectivity.checkNetworkConnection()) {
+    if (await _networkConnectivity.checkNetworkConnection()) {
       final isExists = await _networkService.isChatInDatabase(chatName);
       log('isChatExists: $isExists');
       isExists
@@ -164,16 +182,14 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
               chatCreationErrorText: ChatTexts.chatAlreadyExistsFieldErrorRu))
           : emit(state.copyWith(chatCreationErrorText: null));
     } else {
-      emit(state.copyWith(chatCreationErrorText: ChatErrorsTexts.noConnectionRU));
+      emit(state.copyWith(
+          chatCreationErrorText: ChatErrorsTexts.noConnectionRU));
     }
   }
 
   @override
   Future<void> close() async {
-    await _userChatsUpdatesSubscription?.cancel();
-    await _removedUserChatsSubscription?.cancel();
-    await _addedUserChatSubscription?.cancel();
-    await _statesSubscription?.cancel();
+    await stopListenUserChatsUpdates();
     chatCreationController.dispose();
     await super.close();
   }
@@ -183,10 +199,9 @@ class ChatsCubitImpl extends Cubit<ChatsState> implements ChatsCubit{
       state.userChats..sort((a, b) => a.name.compareTo(b.name));
 
   @override
-  Future<void> setStateStatus({Duration? delay, required ChatsStatus status}) async {
-    delay != null
-        ? await Future.delayed(delay)
-        : null;
+  Future<void> setStateStatus(
+      {Duration? delay, required ChatsStatus status}) async {
+    delay != null ? await Future.delayed(delay) : null;
     emit(state.copyWith(status: status));
   }
 

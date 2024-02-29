@@ -64,15 +64,14 @@ class MyApp extends HookWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [
+        providers: [
           BlocProvider<AuthCubit>(
               create: (context) => AuthCubitImpl(
                   authService: FirebaseAuthService(),
                   networkService: GetIt.I.get<NetworkService>(),
                   localStorageService: GetIt.I.get<LocalStorageService>(),
                   networkConnectivity: GetIt.I.get<NetworkConnectivity>(),
-                  notificationService: GetIt.I.get<NotificationService>()
-              )),
+                  notificationService: GetIt.I.get<NotificationService>())),
           BlocProvider<ChatsCubit>(
               create: (context) => ChatsCubitImpl(
                   networkService: GetIt.I.get<NetworkService>(),
@@ -80,18 +79,18 @@ class MyApp extends HookWidget {
                   networkConnectivity: GetIt.I.get<NetworkConnectivity>(),
                   eventsListening: GetIt.I.get<DatabaseEventsListening>(),
                   notificationService: GetIt.I.get<NotificationService>())),
-        BlocProvider<ChatSearchCubit>(
-            create: (context) =>  ChatSearchCubitImpl(
-                storageService: GetIt.I.get<LocalStorageService>(),
-                networkConnectivity: GetIt.I.get<NetworkConnectivity>(),
-                networkService: GetIt.I.get<NetworkService>(),
-                eventsListening: GetIt.I.get<DatabaseEventsListening>()))
+          BlocProvider<ChatSearchCubit>(
+              create: (context) => ChatSearchCubitImpl(
+                  storageService: GetIt.I.get<LocalStorageService>(),
+                  networkConnectivity: GetIt.I.get<NetworkConnectivity>(),
+                  networkService: GetIt.I.get<NetworkService>(),
+                  eventsListening: GetIt.I.get<DatabaseEventsListening>()))
         ],
         child: MaterialApp.router(
-        routerConfig: AppNavigation.goRouter,
-        title: 'Chat app',
-        theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+          routerConfig: AppNavigation.goRouter,
+          title: 'Chat app',
+          theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
             useMaterial3: true,
             textTheme: GoogleFonts.robotoTextTheme(Theme.of(context)
                 .textTheme.copyWith(displayMedium: TextStyle(

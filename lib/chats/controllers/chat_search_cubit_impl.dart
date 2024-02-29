@@ -25,38 +25,7 @@ class ChatSearchCubitImpl extends Cubit<SearchState>
         _storageService = storageService,
         _networkConnectivity = networkConnectivity,
         _eventsListening = eventsListening,
-        super(const SearchState(status: SearchStatus.init)) {
-    _statesSubscription = stream.listen((event) {
-      if (_addedUserChatSubscription == null &&
-          event.status == SearchStatus.done &&
-          _eventsListening.currentUserId != null) {
-        _addedUserChatSubscription =
-            _eventsListening.addedUserChatsStream().listen((event) {
-          final index = state.searchResult
-              .indexWhere((element) => element.chat.name == event.name);
-          index != -1
-              ? emit(state.copyWith(
-                  searchResult: List.of(state.searchResult)
-                    ..[index] = (chat: event, isJoined: true)))
-              : null;
-        });
-      }
-      if (_removedUserChatsSubscription == null &&
-          event.status == SearchStatus.done &&
-          _eventsListening.currentUserId != null) {
-        _removedUserChatsSubscription =
-            _eventsListening.deletedUserChatsStream().listen((event) {
-          final index = state.searchResult
-              .indexWhere((element) => element.chat.name == event.name);
-          index != -1
-              ? emit(state.copyWith(
-                  searchResult: List.of(state.searchResult)
-                    ..[index] = (chat: event, isJoined: false)))
-              : null;
-        });
-      }
-    });
-  }
+        super(const SearchState(status: SearchStatus.init));
 
   final NetworkService _networkService;
   StreamSubscription<ChatInfo>? _addedUserChatSubscription;
@@ -65,7 +34,9 @@ class ChatSearchCubitImpl extends Cubit<SearchState>
   final LocalStorageService _storageService;
   final NetworkConnectivity _networkConnectivity;
   final DatabaseEventsListening _eventsListening;
-  StreamSubscription<SearchState>? _statesSubscription;
+
+  @override
+  bool isListeningUserChatsUpdates = false;
 
   @override
   TextEditingController chatSearchController = TextEditingController();
@@ -135,7 +106,8 @@ class ChatSearchCubitImpl extends Cubit<SearchState>
       }
       await _networkService.joinChat(
           chatInfo, userInfo.copyWith(isNotificationsEnabled: false));
-      _storageService.addUserChat(LocalChatInfo.fromChatInfo(chatInfo));
+      _storageService.addUserChat(
+          LocalChatInfo.fromChatInfoAndUserId(chatInfo, userInfo.id));
     } catch (e, stackTrace) {
       log(stackTrace.toString());
       emit(state.copyWith(
@@ -145,8 +117,8 @@ class ChatSearchCubitImpl extends Cubit<SearchState>
 
   @override
   Future<void> close() async {
-    await _addedUserChatSubscription?.cancel();
-    await _statesSubscription?.cancel();
+    await stopListeningChatUpdates();
+    chatSearchController.dispose();
     await super.close();
   }
 
@@ -160,5 +132,43 @@ class ChatSearchCubitImpl extends Cubit<SearchState>
         ? await Future.delayed(delay)
         : null;
     emit(state.copyWith(status: status));
+  }
+
+  @override
+  void startListeningChatUpdates(UserInfo userInfo) {
+    if (isListeningUserChatsUpdates == true) {
+      return;
+    }
+    log('chatSearch: startListeningChatUpdates');
+    isListeningUserChatsUpdates = true;
+    _addedUserChatSubscription ??=
+        _eventsListening.addedUserChatsStream(userInfo.id).listen((event) {
+      final index = state.searchResult
+          .indexWhere((element) => element.chat.name == event.name);
+      index != -1
+          ? emit(state.copyWith(
+              searchResult: List.of(state.searchResult)
+                ..[index] = (chat: event, isJoined: true)))
+          : null;
+    });
+    _removedUserChatsSubscription ??=
+        _eventsListening.deletedUserChatsStream(userInfo.id).listen((event) {
+      final index = state.searchResult
+          .indexWhere((element) => element.chat.name == event.name);
+      index != -1
+          ? emit(state.copyWith(
+              searchResult: List.of(state.searchResult)
+                ..[index] = (chat: event, isJoined: false)))
+          : null;
+    });
+  }
+
+  @override
+  Future<void> stopListeningChatUpdates() async {
+    _addedUserChatSubscription?.cancel();
+    _removedUserChatsSubscription?.cancel();
+    _addedUserChatSubscription = null;
+    _removedUserChatsSubscription = null;
+    isListeningUserChatsUpdates = false;
   }
 }
